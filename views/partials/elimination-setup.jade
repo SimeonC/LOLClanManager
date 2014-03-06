@@ -1,0 +1,14 @@
+//- This is the partial for all the elimination-setup HTML
+p format: {{eliminationObject.format}}, maxDepth: {{eliminationObject.maxDepth}}, {{eliminationObject.fullMap}}, {{players}}
+.tree(elimination-map='eliminationObjectStatic', show-byes="true", leaf-only="false", elimination-editable="false")
+	pairingdiv.pairing(depth="{{$depth}}")
+	linkdiv.pairing-link
+		.line-box
+	resultdiv.pairing-result
+		input.name.btn(value="{{playerValue($pair.team1)}}")
+		input.name.btn(value="{{playerValue($pair.team2)}}")
+	finalresultdiv.pairing-result.final
+		input.name.btn(value="{{pairWinner($pair)}}")
+	leafdiv.input-container
+		input.name.btn.team1(value="{{playerValue($pair.team1)}}")
+		input.name.btn.team2(value="{{playerValue($pair.team2)}}")

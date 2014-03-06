@@ -1,0 +1,25 @@
+{
+  "name": "Clan-Practice-Manager",
+  "version": "0.0.1",
+  "private": true,
+  "dependencies": {
+    "resourceful": "0.2.x",
+    "zappajs": "0.4.x",
+    "jade": "1.1.x",
+    "express-validator": "1.0.x",
+    "asset-rack": "2.2.x",
+    "zappajs-partials": "0.0.x",
+    "stylus": "0.42.x",
+    "formidable": "1.0.x",
+    "helmet": "0.1.x",
+    "async": "0.2.x",
+    "cheerio": "0.13.x",
+    "request": "2.33.x",
+    "coffee-script": "1.6.x",
+    "consolidate": "*"
+  },
+  "scripts": {
+	  "start": "coffee app.coffee",
+	  "test": "mocha --compilers coffee:coffee-script"
+  }
+}

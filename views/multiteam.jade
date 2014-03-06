@@ -1,0 +1,35 @@
+extends layout
+
+block head
+	script(src='/assets/js/multiteam.js')
+
+block content
+	h2 Lol MultiTeam Balancer
+	#app(ng-app='lolbalancer', ng-controller="balancer")
+		.row
+			.input.col-md-6
+				h3 Players
+				button(ng-click="addPlayer()") Add Player
+				div(ng-repeat="player in players")
+					input.form-control(ng-model="player")
+			.input.col-md-6
+				h3 Captains
+				button(ng-click="addCaptain()") Add Captain
+				div(ng-repeat="player in captains")
+					input.form-control(ng-model="player")
+		.row
+			.output.col-md-12
+				button.btn.primary(ng-click="crunchNumbers()", ng-disabled="sendingRequest") Calculate
+		.row(ng-repeat="game in result")
+			.col-md-12
+				p {{confidenceDisplay(game.confidence)}}
+			.col-md-6
+				p
+					b {{game.team1percent | number:2}}%
+				.team(style="float: left;")
+					p(ng-repeat="player in game.team1") {{player.name}} {{player.score}}
+			.col-md-6
+				p
+					b {{game.team2percent | number:2}}%
+				.team(style="float: left;")
+					p(ng-repeat="player in game.team2") {{player.name}} {{player.score}}

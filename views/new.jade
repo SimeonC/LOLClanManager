@@ -1,0 +1,88 @@
+extends layout
+
+block head
+	- css('new')
+	- js('lib/zest')
+	- js('lib/hammer.min')
+	- js('lib/angular-hammer')
+	- js('directives')
+	- js('new')
+
+block content
+	#app(ng-app='contestate', ng-controller="newcontest")
+		h2 Select Competition Type
+		#options.row
+			.contest.span2(ng-repeat='ct in contesttypes')
+				.capitalise.btn.btn-large.btn-block(hm-options="{tap_always: false}",
+					hm-tap="setContesttype(ct)",
+					ng-click="setContesttype(ct)",
+					ng-class="{'btn-primary': session.contesttype == ct, 'btn-info': session.contesttype != ct}")
+						| {{ct}}
+						i(class='{{ct}}-large')
+		div(ng-switch="session.contesttype")
+			div(ng-switch-when="elimination")
+				.tree(elimination-map='eliminationObjectCreate', show-byes="true", leaf-only="false", elimination-editable="true", next-player-index="nextPlayerIndex()")
+					pairingdiv.pairing
+					linkdiv.pairing-link
+						i.icon-plus-sign.add-above
+						i.icon-plus-sign.add-below
+						.line-box
+					resultdiv.pairing-result
+						input.name.btn(value="TBA")
+						input.name.btn(value="TBA")
+					finalresultdiv.pairing-result.final
+						input.name.btn(value="Winner!")
+					leafdiv.input-container
+						input.name.btn.team1(ng-model="session.players[0][$pair.team1]")
+						input.name.btn.team2(ng-model="session.players[0][$pair.team2]", ng-show="$pair.team1 != $pair.team2")
+			div(ng-switch-default)
+				h2 Enter in Player/Team Names
+				h3
+					| Delete all the text in a row to remove the row or click/tap on the 
+					i.icon-reorder
+					|  or swipe left on the row.
+				#players.row
+					#players0.span3
+						.input-wrap-header Enter Player/Team Names...
+						.input-wrap.transition(cu-repeat-reorder='player in session.players[0]', cu-reorder-handle="i.icon-reorder", hm-swipeleft="showDelete($event)")
+							input.player(type='text',
+								tabindex='{{($index*2) + 1}}',
+								ng-change='checkForPlayerDelete(0, $index)',
+								ng-model='player.val',
+								ng-class="{'last-player': $index == session.players[0].length-1}",
+								cu-next-tab-order-on-enter)
+							i.icon-reorder(hm-dragstart="hideDeletes()", hm-tap="showDelete($event)")
+							.width-hide
+								.btn.btn-danger(hm-tap="deletePlayer(0, $index)", ng-click="deletePlayer(0, $index)") Delete
+						//- tabindex logic is +1 due to 0 start of $index and then add on to start at the correct point, make sure to use tabindex='{{players.length + offset}}' on everything that gets focus after this
+						.input-wrap
+							input.temp-player(type='text',
+								ng-model='tempplayer[0]',
+								ng-change='updatePlayers(0)',
+								tabindex='{{(session.players[0].length*2) + 1}}',
+								placeholder='Enter a player/team name...')
+					.span1(ng-show="session.contesttype == 'roundrobin'")
+						h2 VS.
+					#players1.span3(ng-show="session.contesttype == 'roundrobin'")
+						.input-wrap-header Enter Player/Team Names...
+						.input-wrap.transition(cu-repeat-reorder='player in session.players[1]', cu-reorder-handle="i.icon-reorder", hm-swipeleft="showDelete($event)")
+							input.player(type='text',
+								tabindex='{{($index + 1)*2}}',
+								ng-change='checkForPlayerDelete(1, $index)',
+								ng-model='player.val',
+								ng-class="{'last-player': $index == session.players[1].length-1}",
+								cu-next-tab-order-on-enter)
+							i.icon-reorder(hm-dragstart="hideDeletes()")
+							.width-hide
+								.btn.btn-danger(hm-tap="deletePlayer(1, $index)", ng-click="deletePlayer(1, $index)") Delete
+						//- tabindex logic is +1 due to 0 start of $index and then add on to start at the correct point, make sure to use tabindex='{{players.length + offset}}' on everything that gets focus after this
+						.input-wrap
+							input.temp-player(type='text',
+								ng-model='tempplayer[1]',
+								ng-change='updatePlayers(1)',
+								tabindex='{{(session.players[1].length + 1)*2}}',
+								placeholder='Enter a player/team name...')
+		p {{storage}}
+		p {{debug}}
+		p In here we shall set up team names, contest type and all sorts of options
+		p First we build a list, we must pass back an Array of names (strings) that shall be competing. Maybe above this we can have an option picker for the different types of competitions.

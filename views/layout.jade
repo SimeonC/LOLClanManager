@@ -1,0 +1,17 @@
+doctype html
+html
+	head
+		meta(charset='utf8')
+		meta(name="viewport", content="width=device-width, initial-scale=1.0")
+		base(href='/')
+		title= title
+		script(src="https://ajax.googleapis.com/ajax/libs/angularjs/1.2.11/angular.min.js")
+		script(src="https://ajax.googleapis.com/ajax/libs/angularjs/1.2.11/angular-resource.min.js")
+		link(href="//netdna.bootstrapcdn.com/bootstrap/3.1.0/css/bootstrap.min.css", rel="stylesheet")
+		link(href="http://netdna.bootstrapcdn.com/font-awesome/3.1.1/css/font-awesome.css", rel="stylesheet")
+		link(href="http://netdna.bootstrapcdn.com/font-awesome/3.1.1/css/font-awesome-ie7.css", rel="stylesheet")
+		block head
+			- assets.tag('/assets/css/app.css')
+			- assets.tag('/assets/js/app.js')
+	body
+		block content

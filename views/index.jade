@@ -1,0 +1,13 @@
+extends layout
+
+block content
+	#app(ng-app='lolbalancer', ng-controller="balancer")
+		h2 Lol Balancer
+		.input
+			div(ng-repeat="player in players")
+				input.form-control(ng-model="player.url")
+			button.btn.primary(ng-click="crunchNumbers()") Calculate
+		.output
+			p {{confidenceDisplay()}}
+			.team(ng-repeat="team in result.teams", style="float: left;")
+				p(ng-repeat="player in team") {{player.name}} {{player.score}} {{player.roleName}}
