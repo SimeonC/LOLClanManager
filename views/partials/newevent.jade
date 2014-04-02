@@ -1,0 +1,203 @@
+//- step 1 - 3 do not loose functionality between steps, only add
+//- every time a player is marked as present - fire off a player score update
+
+//- step one - select present players
+//- step two - show teams and place in teams the players who are assigned and present
+//- step three - allow allocating of team matchups and leftover players to teams
+//- step four - publish, New functionality - display public URL and allow for win/loss selection
+
+script(id="dropdown/dropdown.tpl.html" type="text/ng-template")
+	ul.dropdown-menu(tabindex="-1" role="menu")
+		li(role="presentation" ng-class="{divider: item.divider}" class="{{item.class}}" ng-repeat="item in content")
+			a(role="menuitem" tabindex="-1" ng-href="{{item.href}}" ng-if="!item.divider && item.href" ng-bind="item.text")
+			a(role="menuitem" tabindex="-1" href="javascript:void(0)" ng-if="!item.divider && item.click" ng-click="$eval(item.click);$hide()" ng-bind="item.text")
+			a(tabindex="-1" ng-if="!item.divider && !item.click && !item.click && item.text" ng-bind="item.text")
+
+script(id="newevent/getattendance.tpl.html" type="text/ng-template")
+	.modal(tabindex="-1" role="dialog")
+		.modal-dialog
+			form.modal-content(role="form" name="attendanceForm" ng-submit="attendance.post()")
+				.modal-header
+					button.close(type="button" ng-click="$hide()") &times;
+					h4.modal-title Get Attendance
+				.modal-body(ng-hide="attendance.loading")
+					.alert.alert-danger(ng-show="attendance.errormessage.name")
+						b {{attendance.errormessage.name}}:
+						|  {{attendance.errormessage.message}}
+					p Please enter in your TAW login details and the event to get attendance from.
+					.form-group(ng-class="formClass(attendanceForm, 'username')")
+						label Username
+						input.form-control(placeholder="Username" name="username" ng-model="attendance.data.username" required)
+					.form-group(ng-class="formClass(attendanceForm, 'password')")
+						label Password
+						input.form-control(placeholder="Password" name="password" ng-model="attendance.data.password" type="password" required)
+					.form-group(ng-class="formClass(attendanceForm, 'eventid')")
+						label Event Id
+						input.form-control(type="number" placeholder="Event ID" name="eventid" ng-model="attendance.data.eventid" required)
+				.modal-footer(ng-hide="attendance.loading")
+					button.btn.btn-default(type="button" ng-click="attendance.data = {};$hide()") Cancel
+					button.btn.btn-success(type="submit" ng-disabled="attendanceForm.$pristine || attendanceForm.$invalid") Submit
+				.modal-body(ng-show="attendance.loading")
+					p {{attendance.loadingmessage}}
+
+script(id="newevent/newplayers.tpl.html" type="text/ng-template")
+	.modal(tabindex="-1" role="dialog")
+		.modal-dialog
+			.modal-content
+				.modal-header
+					h4.modal-title Check New Players
+				.modal-body
+					p Please check that the following players in game name's are correct.
+					.row
+						.col-md-6
+							h5 Name
+						.col-md-6
+							h5 In Game Name
+					form
+						.row(ng-repeat="player in newPlayers.players" name="newPlayerForm")
+							.col.md-12
+								.alert.alert-danger(ng-show="player.updatingerror && player.updatingerror != ''")
+									b Updating Error:
+									|  {{player.updatingerror}}
+							.col-md-6
+								label {{player.name}}
+							.col-md-6
+								input.form-control(placeholder="In Game Name" name="inGameName" ng-model="player.inGameName" required)
+							// NEED DELETE BUTTON!!!!!
+				.modal-footer
+					button.btn.btn-success(type="button" ng-click="newPlayers.process()" ng-disabled="newPlayerForm.$pristine || newPlayerForm.$invalid") Submit
+
+script(id="newevent/placements.tpl.html" type="text/ng-template")
+	.modal(tabindex="-1" role="dialog")
+		.modal-dialog
+			.modal-content
+				.modal-header
+					button.close(type="button" ng-click="$hide()") &times;
+					h4.modal-title Set Placements
+				.modal-body
+					.row
+						.col-md-12(ng-repeat="pairing in currentHistory.pairings")
+							button.btn.btn-sm.btn-danger.pull-right(ng-click="placements.removePairing($index)" style="margin-top: 12px;")
+								i.fa.fa-trash-o
+							.well.well-group(style="width: 519px")
+								a.btn.btn-default.well-sm.team(ng-if="tempTeams[pairing[0]] != undefined" bs-dropdown="placements.getAvailableTeams($index, 0)")
+									b {{tempTeams[pairing[0]].name}}
+									br
+									small Score: {{totalScore(tempTeams[pairing[0]])}}
+								a.btn.btn-default.well-sm.team(ng-if="tempTeams[pairing[0]] == undefined" bs-dropdown="placements.getAvailableTeams($index, 0)")
+									b Click to select
+									br
+									small Curently Riot Queue
+								.well-sm.vs.btn.btn-warning.disabled Vs.
+								a.btn.btn-default.well-sm.team(ng-if="tempTeams[pairing[1]] != undefined" bs-dropdown="placements.getAvailableTeams($index, 1)")
+									b {{tempTeams[pairing[1]].name}}
+									br
+									small Score: {{totalScore(tempTeams[pairing[1]])}}
+								a.btn.btn-default.well-sm.team(ng-if="tempTeams[pairing[1]] == undefined" bs-dropdown="placements.getAvailableTeams($index, 1)")
+									b Click to select
+									br
+									small Curently Riot Queue
+					button.btn.btn-default(type="button" ng-click="placements.addPairing()")
+						i.fa.fa-plus
+						|  Add Pairing
+				.modal-footer
+					button.btn.btn-default(type="button" ng-click="placements.cleanPairings();$hide()") Close
+.row
+	.col-md-3
+		p Shortcut Key Mode  
+			.btn-group
+				btn.btn.btn-default(ng-click="shortcutmode = true" ng-class="{active: shortcutmode}") Top 1
+				btn.btn.btn-default(ng-click="shortcutmode = false" ng-class="{active: !shortcutmode}") All Visible
+	.col-md-9
+		.well.well-group.pull-left(ng-repeat="pairing in currentHistory.pairings" ng-if="tempTeams[pairing[0]] != undefined")
+			.well-sm.team
+				b {{tempTeams[pairing[0]].name}}
+				br
+				small Score: {{totalScore(tempTeams[pairing[0]])}}
+			.well-sm.vs.btn.btn-warning.disabled Vs.
+			.well-sm.team(ng-if="tempTeams[pairing[1]] != undefined")
+				b {{tempTeams[pairing[1]].name}}
+				br
+				small Score: {{totalScore(tempTeams[pairing[1]])}}
+			.well-sm.team(ng-if="tempTeams[pairing[1]] == undefined")
+				b Riot Queue
+
+// Top Buttons
+
+.row
+	.col-md-3
+		a.btn.btn-primary(ng-click="attendance.show()") Get Attendance From Event
+	.col-md-3
+		a.btn.btn-primary.pull-right(ng-click="processPlayers()") Allocate Present Players To Default Teams
+	.col-md-6
+		a(ng-click="finish()" class="pull-right btn {{finishButtonClass()}}") Start Event!
+// Main Data area!
+.row
+	// All players
+	.col-md-3
+		h3 All Players
+		form(ng-submit="addFilteredPlayers()")
+			input(ng-model="playerFilterString")
+			button.btn.btn-primary(type="submit") Add
+		.list-group
+			a.list-group-item(ng-repeat="pid in allPlayers | filter: playerFilter | orderBy: playerNameByRef" ng-click="markPlayerPresent(pid)" ng-class="{'alert-danger': data.players[pid].updatingerror && data.players[pid].updatingerror != ''}")
+				!= helpers.outputLeaderStar('pid', undefined, true, false)
+				| {{data.players[pid].name}}
+				i.fa.fa-spinner.fa-spin.pull-right(ng-show="data.players[pid].updating")
+				i.fa.fa-exclamation-triangle.pull-right(ng-show="!data.players[pid].updating && data.players[pid].updatingerror && data.players[pid].updatingerror != ''")
+	// present players
+	.col-md-4
+		h3 Present Players
+		p
+			input(ng-model="presentPlayerFilterString")
+		p.text-right
+			| Set As Unattending
+			a.btn.btn-xs.btn-default.btn-inactive
+				i.fa.fa-toggle-left
+		p.text-right
+			| Assign to 
+			span.text-primary Active Team 
+			a.btn.btn-xs.btn-default.btn-inactive
+				i.fa.fa-toggle-right
+		.btn-group
+			btn.btn.btn-default(ng-click="sortOrder = 0" ng-class="{active: sortOrder == 0}") Name
+			btn.btn.btn-default(ng-click="sortOrder = 1" ng-class="{active: sortOrder == 1}") Score
+		ul.list-group
+			li.list-group-item(ng-repeat="pid in presentPlayers | filter: presentPlayerFilter | orderBy: getSortOrder()" ng-class="{'alert-danger': data.players[pid].updatingerror && data.players[pid].updatingerror != ''}")
+				!= helpers.outputLeaderStar('pid', undefined, true, false)
+				| {{data.players[pid].name}} ({{data.players[pid].scores.aggregate}})
+				i.fa.fa-spinner.pull-right.fa-spin(ng-show="data.players[pid].updating")
+				.btn-group.pull-right(ng-hide="data.players[pid].updating || (data.players[pid].updatingerror && data.players[pid].updatingerror != '')")
+					a.btn.btn-xs.btn-default(ng-click="removePlayer(pid)" tooltip="Remove From Present")
+						i.fa.fa-toggle-left
+					a.btn.btn-xs.btn-default(ng-click="addPlayerToActiveTeam(pid)" Tooltip="Assign to Active Team")
+						i.fa.fa-toggle-right
+				i.fa.fa-exclamation-triangle.pull-right(ng-click="fixPlayer(pid)" ng-show="!data.players[pid].updating && data.players[pid].updatingerror && data.players[pid].updatingerror != ''")
+	// teams allocation
+	.col-md-5
+		h3 Teams&nbsp;
+			a.btn.btn-primary(ng-click="addTeam()")
+				i.fa.fa-plus
+			a.btn.btn-primary.pull-right(ng-click="placements.setupAvailableTeams()") Set Pairings
+		div.panel(ng-repeat="(tid, team) in tempTeams | orderBy: team.name" ng-class="{'panel-default': activeTeam != tid, 'panel-primary': activeTeam == tid}")
+			.panel-heading
+				h4.panel-title(ng-click="setActiveTeam(tid)") {{team.name}}&nbsp;
+					span(ng-bind-html="keyForIndex($index)")
+					.btn-group.pull-right
+						a.btn.btn-sm.btn-danger(ng-click="removeTeam(tid)")
+							i.fa.fa-trash-o
+			.panel-body
+				p(ng-if="presentPlayers.length > 0 && !topPresentPlayer().updating")
+					a.btn.btn-default(ng-click="assignTeam(tid, true)") Add Top Present Player
+					|  Total Score With 
+					b {{topPresentPlayer().name}}
+					|  will be: 
+					b {{totalScore(team) + topPresentPlayer().scores.aggregate}}
+				.list-group
+					b.list-group-item Players
+					a.list-group-item(ng-repeat="pid in team.players | orderBy: getSortOrder(session.teams[tid])" ng-click="unassign(pid, tid)")
+						!= helpers.outputLeaderStar('pid', 'tid', true)
+						| {{data.players[pid].name}}
+						i.fa.fa-spinner.pull-right.fa-spin(ng-show="data.players[pid].updating")
+				p Total Score: {{totalScore(team)}}
+				p Average Score: {{averageScore(team)}}

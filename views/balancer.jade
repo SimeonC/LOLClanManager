@@ -1,5 +1,9 @@
 extends layout
 
+block head
+	!= assets.tag('/assets/css/balancer.css')
+	!= assets.tag('/assets/js/balancer.js')
+
 block content
 	#app(ng-app='lolbalancer', ng-controller="balancer")
 		h2 Lol Balancer

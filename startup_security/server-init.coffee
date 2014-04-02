@@ -1,9 +1,8 @@
 @include = ->
+	@set 'env': 'development'
 	helmet = require 'helmet'
 	@include 'asset-rack'
-	
 	@configure =>
-		@use @assets
 		@set 'view options':
 			layout: false
 		@app.engine 'jade', require('consolidate').jade

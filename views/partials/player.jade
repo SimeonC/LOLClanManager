@@ -1,0 +1,21 @@
+h1 Player
+button.btn.btn-primary(ng-click="reloadFromServers()")
+	i.fa.fa-refresh
+	|  Reload
+button.btn.btn-success
+	i.fa.fa-save
+	|  Save
+a.btn.btn-warning(href="manager")
+	i.fa.fa-times
+	|  Cancel
+p Name: {{player.name}}
+p Ingame Name: {{player.inGameName}}
+p Total Session Win Percentage: {{player.winpercent | number:2}}% ({{player.win}} wins | {{player.loss}} losses)
+p Rank: {{player.rank.label}}
+p Scores:
+ul.list-group
+	li.list-group-item loldb ({{player.scores.loldb}})
+	li.list-group-item opgg ({{player.scores.opgg}})
+p Top Champs:
+ul.list-group
+	li.list-group-item(ng-repeat="champ in player.mostPlayedChampions") {{champ.champion}}, {{champ.games}}, {{champ.kda}}

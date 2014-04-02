@@ -1,22 +1,18 @@
 @include = ->
-	rack = require 'asset-rack'
-	
-	@assets = new rack.Rack [
-		new rack.DynamicAssets
-			type: rack.StylusAsset
-			urlPrefix: '/assets/css'
-			dirname: __dirname + '/assets/stylus'
-			filter: '.styl'
-		new rack.SnocketsAsset
-			url: '/assets/js/app.js'
-			filename: __dirname + '/assets/coffeescript/app.coffee'
-		new rack.SnocketsAsset
-			url: '/assets/js/new.js'
-			filename: __dirname + '/assets/coffeescript/new.coffee'
-		new rack.SnocketsAsset
-			url: '/assets/js/multiteam.js'
-			filename: __dirname + '/assets/coffeescript/multiteam.coffee'
-		new rack.StaticAssets
-			urlPrefix: '/assets/js'
-			dirname: __dirname + '/assets/javascript'
-	]
+	ConnectMincer = require 'connect-mincer'
+
+	connectMincer = new ConnectMincer
+		mincer: require "mincer"
+		root: __dirname
+		production: process.env.NODE_ENV is 'production'
+		mountPoint: '/assets'
+		manifestFile: __dirname + '/public/assets/manifest.json'
+		paths: [
+			'assets/coffeescript',
+			'assets/javascript',
+			'assets/stylus',
+			'bower_components/angular-strap/dist',
+			'bower_components/angular-motion/dist'
+		]
+	@use connectMincer.assets()
+	if process.env.NODE_ENV isnt 'production' then @app.use '/assets', connectMincer.createServer()

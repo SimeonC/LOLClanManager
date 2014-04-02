@@ -1,0 +1,74 @@
+.row
+	.col-md-12
+		button.btn.btn-default.pull-right(ng-click="backToSession()") Back to Session
+		h2 Event For {{event.date | date}}
+.row.event-pairing(ng-repeat="pair in event.pairings")
+	.col-md-6.panel(ng-class="{'panel-default': pair.winner == 0, 'panel-info': pair.winner == 1, 'panel-danger': pair.winner == 2}")
+		.panel-heading
+			h4.panel-title
+				| {{pair.team1.name}}
+				span.pull-right(ng-if="pair.winner == 1") Winner!
+				button.btn.btn-primary.btn-sm.pull-right(ng-if="pair.winner == 0" ng-click="setWinner(pair, 1)")
+					| Record Win 
+					i.fa.fa-arrow-left
+		.panel-body
+			.list-group
+				.list-group-item.player-report(ng-repeat="pid in pair.team1.players | orderBy: leaderFirst(session.teams[pair.team1.id])")
+					h5.pull-right.label(ng-class="{'label-default': pair.winner == 0, 'label-info': pair.winner == 1, 'label-danger': pair.winner == 2}")
+						!= helpers.outputLeaderStar('pid', 'pair.team1.id')
+						| {{data.players[pid].name}}
+					dl.dl-horizontal
+						dt Score
+						dd {{data.players[pid].scores.aggregate}}
+						dt Rank
+						dd {{data.players[pid].rank.label}}
+						dt Top 3 Roles
+						dd {{preferenceRolesString(data.players[pid].preference)}}
+						dt Most Played
+						dd
+							table.table.table-condensed
+								tr
+									th Champion
+									th Games
+									th kda
+								tr(ng-repeat="champ in data.players[pid].mostPlayedChampions")
+									td {{champ.champion}}
+									td {{champ.games}}
+									td {{champ.kda}}
+	.col-md-1.vs-bracket
+		button.btn.btn-xs.btn-danger#reset(title="Click to Reset Win" ng-click="setWinner(pair, 0)" ng-show="pair.winner != 0")
+			i.fa.fa-refresh
+		button.btn.btn-warning.disabled#vs Vs
+	.col-md-6.panel(ng-class="{'panel-default': pair.winner == 0, 'panel-info': pair.winner == 2, 'panel-danger': pair.winner == 1}")
+		.panel-heading
+			h4.panel-title.text-right
+				span(ng-if="!pair.team2") Riot Allocated Team
+				span(ng-if="pair.team2") {{pair.team2.name}}
+				span.pull-left(ng-if="pair.winner == 2") Winner!
+				button.btn.btn-primary.btn-sm.pull-left(ng-if="pair.winner == 0" ng-click="setWinner(pair, 2)")
+					i.fa.fa-arrow-right
+					|  Record Win
+		.panel-body(ng-if="pair.team2")
+			.list-group
+				.list-group-item.player-report(ng-repeat="pid in pair.team2.players | orderBy: leaderFirst(session.teams[pair.team2.id])")
+					h5.pull-left.label(ng-class="{'label-default': pair.winner == 0, 'label-info': pair.winner == 2, 'label-danger': pair.winner == 1}")
+						!= helpers.outputLeaderStar('pid', 'pair.team2.id')
+						| {{data.players[pid].name}}
+					dl.dl-horizontal
+						dt Score
+						dd {{data.players[pid].scores.aggregate}}
+						dt Rank
+						dd {{data.players[pid].rank.label}}
+						dt Top 3 Roles
+						dd {{preferenceRolesString(data.players[pid].preference)}}
+						dt Most Played
+						dd
+							table.table.table-condensed
+								tr
+									th Champion
+									th Games
+									th kda
+								tr(ng-repeat="champ in data.players[pid].mostPlayedChampions")
+									td {{champ.champion}}
+									td {{champ.games}}
+									td {{champ.kda}}

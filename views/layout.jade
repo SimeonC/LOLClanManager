@@ -5,13 +5,16 @@ html
 		meta(name="viewport", content="width=device-width, initial-scale=1.0")
 		base(href='/')
 		title= title
-		script(src="https://ajax.googleapis.com/ajax/libs/angularjs/1.2.11/angular.min.js")
-		script(src="https://ajax.googleapis.com/ajax/libs/angularjs/1.2.11/angular-resource.min.js")
-		link(href="//netdna.bootstrapcdn.com/bootstrap/3.1.0/css/bootstrap.min.css", rel="stylesheet")
-		link(href="http://netdna.bootstrapcdn.com/font-awesome/3.1.1/css/font-awesome.css", rel="stylesheet")
-		link(href="http://netdna.bootstrapcdn.com/font-awesome/3.1.1/css/font-awesome-ie7.css", rel="stylesheet")
+		script(src="/socket.io/socket.io.js")
+		script(src="https://ajax.googleapis.com/ajax/libs/angularjs/1.2.15/angular.min.js")
+		script(src="https://ajax.googleapis.com/ajax/libs/angularjs/1.2.15/angular-resource.min.js")
+		script(src="https://ajax.googleapis.com/ajax/libs/angularjs/1.2.15/angular-route.min.js")
+		script(src="https://ajax.googleapis.com/ajax/libs/angularjs/1.2.15/angular-animate.min.js")
+		!= js('angular-strap.js')
+		!= js('angular-strap.tpl.js')
+		link(href="//netdna.bootstrapcdn.com/bootstrap/3.1.1/css/bootstrap.min.css", rel="stylesheet")
+		link(href="http://netdna.bootstrapcdn.com/font-awesome/4.0.3/css/font-awesome.css", rel="stylesheet")
+		!= css('angular-motion.min.css')
 		block head
-			- assets.tag('/assets/css/app.css')
-			- assets.tag('/assets/js/app.js')
 	body
 		block content

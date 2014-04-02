@@ -1,0 +1,11 @@
+extends layout
+
+block head
+	!= css('app.css')
+	!= js('app.js')
+
+block content
+	#app.container(ng-app='lolclanmanager', ng-controller="MainController as main")
+		.view-animate-container
+			.view-animate(ng-if="!data.loading", ng-view)
+			h1(ng-if="data.loading") Loading

@@ -1,0 +1,22 @@
+{
+  "name": "LOL Clan Manager",
+  "dependencies": {
+    "angular-strap": "~2.0.0",
+    "angular-motion": "*"
+  },
+  "version": "0.0.1",
+  "homepage": "https://github.com/SimeonC/LOLClanManager",
+  "authors": [
+    "SimeonC"
+  ],
+  "description": "A Node.JS Server to Manage League of Legends Clans",
+  "license": "MIT",
+  "private": true,
+  "ignore": [
+    "**/.*",
+    "node_modules",
+    "bower_components",
+    "test",
+    "tests"
+  ]
+}

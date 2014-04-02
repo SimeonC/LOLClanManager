@@ -1,25 +1,32 @@
 {
-  "name": "Clan-Practice-Manager",
+  "name": "LOL-Clan-Manager",
+  "repository": "https://github.com/SimeonC/LOLClanManager",
   "version": "0.0.1",
   "private": true,
   "dependencies": {
-    "resourceful": "0.2.x",
-    "zappajs": "0.4.x",
-    "jade": "1.1.x",
-    "express-validator": "1.0.x",
-    "asset-rack": "2.2.x",
-    "zappajs-partials": "0.0.x",
-    "stylus": "0.42.x",
-    "formidable": "1.0.x",
-    "helmet": "0.1.x",
-    "async": "0.2.x",
-    "cheerio": "0.13.x",
-    "request": "2.33.x",
-    "coffee-script": "1.6.x",
-    "consolidate": "*"
+    "resourceful": "~0.2.0",
+    "zappajs": "~0.4.0",
+    "jade": "~1.1.0",
+    "express-validator": "~1.0.0",
+    "zappajs-partials": "~0.0.0",
+    "stylus": "~0.42.0",
+    "formidable": "~1.0.0",
+    "helmet": "~0.1.0",
+    "async": "~0.2.0",
+    "cheerio": "~0.13.0",
+    "request": "~2.33.0",
+    "coffee-script": "~1.6.0",
+    "tough-cookie": "~0.12.0",
+    "consolidate": "*",
+    "mathjs": "*",
+    "connect-mincer": "*",
+    "bower": "*",
+    "mincer": "~1.0.1",
+    "node-teamspeak": "~1.0.4"
   },
   "scripts": {
-	  "start": "coffee app.coffee",
-	  "test": "mocha --compilers coffee:coffee-script"
+    "postinstall": "sh postinstall.sh",
+    "start": "coffee app.coffee",
+    "test": "mocha --compilers coffee:coffee-script"
   }
 }

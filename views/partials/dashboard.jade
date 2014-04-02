@@ -1,0 +1,17 @@
+.row
+	.col-lg-4
+		h2 Players
+			a.pull-right.btn(href="newplayer")
+				i.fa.fa-plus
+		.list-group
+			a.list-group-item(ng-repeat="key in playerOrder | orderBy: leaderThenPlayerName", href="player/{{key}}")
+				!= helpers.outputLeaderStar('key')
+				| {{data.players[key].name}}
+	.col-lg-4
+		h2 Sessions
+			a.pull-right.btn(href="newsession")
+				i.fa.fa-plus
+		.list-group
+			a.list-group-item(ng-repeat="(key, session) in data.sessions", href="session/{{key}}") {{session.name}}
+	.col-lg-4
+		h2 Stats

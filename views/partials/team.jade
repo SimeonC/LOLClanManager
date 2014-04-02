@@ -1,0 +1,53 @@
+p {{team}}
+.row
+	.col-md-12
+		h2 Team {{team.name}} {{teamId}}
+.row
+	.col-md-3
+		p player list {{playersOnOtherTeams}}
+		.btn-group
+			btn.btn.btn-default(ng-click="sortOrder = 0" ng-class="{active: sortOrder == 0}") Name
+			btn.btn.btn-default(ng-click="sortOrder = 1" ng-class="{active: sortOrder == 1}") Score
+		.list-group
+			a.list-group-item(ng-repeat="pid in availablePlayersList | orderBy: getSortOrder:sortOrder == 1" ng-click="attachPlayer(pid)" ng-class="{'list-danger': onOtherTeam(pid)}")
+				!= helpers.outputLeaderStar('pid', 'teamId')
+				| {{data.players[pid].name}} 
+				b {{playerScoreByRef(pid)}}
+	.col-md-4
+		p currently assigned players {{attachedPlayers}}
+		.list-group
+			a.list-group-item(ng-repeat="pid in attachedPlayers | orderBy: getSortOrder2" ng-click="unattachPlayer(pid)")
+				!= helpers.outputLeaderStar('pid', 'teamId')
+				| {{data.players[pid].name}} 
+				b {{playerScoreByRef(pid)}}
+	.col-md-5
+		p Stats/details
+		table.table.table-bordered
+			tr.info
+				th Team Wins
+				td {{team.win}}
+			tr.danger
+				th Team Losses
+				td {{team.loss}}
+		table.table.table-bordered
+			tr
+				th(rowspan="2") Player
+				th(colspan="2") Games With
+				th(colspan="2") Against
+			tr
+				th.info Wins
+				th.danger Losses
+				th.info Wins
+				th.danger Losses
+			tr(ng-repeat="pid in statsOrder | orderBy: playerNameByRef" ng-class="{success: attachedPlayers.indexOf(pid) != -1}")
+				td
+					!= helpers.outputLeaderStar('pid', 'teamId')
+					| {{data.players[pid].name}}
+				td(ng-class="{info: attachedPlayers.indexOf(pid) == -1, 'text-info': attachedPlayers.indexOf(pid) != -1}")
+					| {{session.playerTeamMatrix[pid][teamId].with.win}}
+				td(ng-class="{danger: attachedPlayers.indexOf(pid) == -1, 'text-danger': attachedPlayers.indexOf(pid) != -1}")
+					| {{session.playerTeamMatrix[pid][teamId].with.loss}}
+				td(ng-class="{info: attachedPlayers.indexOf(pid) == -1, 'text-info': attachedPlayers.indexOf(pid) != -1}")
+					| {{session.playerTeamMatrix[pid][teamId].against.win}}
+				td(ng-class="{danger: attachedPlayers.indexOf(pid) == -1, 'text-danger': attachedPlayers.indexOf(pid) != -1}")
+					| {{session.playerTeamMatrix[pid][teamId].against.loss}}

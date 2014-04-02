@@ -1,0 +1,57 @@
+.row
+	.col-lg-12
+		h2 {{session.name}}
+			a.btn.btn-default.pull-right(href="dashboard") Dashboard
+.row
+	.col-lg-12
+		h2 Teams
+	.col-lg-4(ng-repeat="(key, team) in session.teams")
+		.panel.panel-default
+			.panel-heading
+				h4
+					| {{team.name}}
+					a.btn.btn-primary.btn-sm.pull-right(href="team/{{sessionKey}}/{{key}}") Edit
+			.panel-body
+				p
+					| Wins 
+					span.badge.label-info {{team.win}}
+					|  Losses 
+					span.badge.label-danger {{team.loss}}
+				.list-group
+					a.list-group-item(ng-repeat="pid in team.players | orderBy: leaderFirst(team)" href="player/{{pid}}")
+						!= helpers.outputLeaderStar('pid', 'team')
+						| {{data.players[pid].name}}
+.row
+	.col-lg-12
+		h2 History
+	.col-lg-12.session-history(ng-repeat="event in session.history")
+		h3 Event on {{event.date | date}}
+			a.btn.btn-primary.pull-right(href="event/{{sessionKey}}/{{$index}}") View Details
+		.row(ng-repeat="pair in event.pairings")
+			.col-md-6.panel.text-right.team-1(ng-class="{'panel-default': pair.winner == 0, 'panel-info': pair.winner == 1, 'panel-danger': pair.winner == 2}")
+				.panel-heading
+					h4.panel-title
+						| {{pair.team1.name}}
+						span.pull-left(ng-if="pair.winner == 1") Winner!
+				.panel-body
+					p Total Score: ({{teamScore(pair.team1)}})
+					p
+						span.player-label.label(ng-repeat="pid in pair.team1.players | orderBy: leaderFirst(session.teams[pair.team1.id]):true" ng-class="{'label-default': pair.winner == 0, 'label-info': pair.winner == 1, 'label-danger': pair.winner == 2}")
+							!= helpers.outputLeaderStar('pid', 'pair.team1.id')
+							| {{data.players[pid].name}}
+			.col-md-1.vs-bracket
+				button.btn.btn-warning.disabled#vs Vs
+			.col-md-6.panel.team-2(ng-class="{'panel-default': pair.winner == 0, 'panel-info': pair.winner == 2, 'panel-danger': pair.winner == 1}")
+				.panel-heading
+					h4.panel-title
+						span(ng-if="!pair.team2") Riot Allocated Team
+						span(ng-if="pair.team2") {{pair.team2.name}}
+						span.pull-right(ng-if="pair.winner == 2") Winner!
+				.panel-body(ng-if="pair.team2")
+					p Total Score: ({{teamScore(pair.team2)}})
+					p
+						span.player-label.label(ng-repeat="pid in pair.team2.players | orderBy: leaderFirst(session.teams[pair.team2.id])" ng-class="{'label-default': pair.winner == 0, 'label-info': pair.winner == 2, 'label-danger': pair.winner == 1}")
+							!= helpers.outputLeaderStar('pid', 'pair.team2.id')
+							| {{data.players[pid].name}}
+				.panel-body(ng-if="!pair.team2")
+					p No Data.

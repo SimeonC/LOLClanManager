@@ -1,0 +1,128 @@
+.capitalise
+	text-transform: capitalize
+
+.centre
+	position: absolute
+	left: 50%
+	top: 50%
+	translate(-50%, -50%)
+
+.width-hide
+	transition(width 1s ease-in-out)
+	width: 0%
+	overflow: hidden
+	
+	&.show
+		width: auto
+
+.panel .panel-heading .btn.btn-sm
+	margin-top: -6px
+
+.well.well-group
+	padding: 0
+	margin-right: 6px
+	height: 54px
+	> .well-sm
+		border-radius: 0
+		height: 100%
+		float: left
+	> .vs
+		line-height: 34px
+
+.modal-body .well-group .team
+	width: 238px
+
+.modal-backdrop.am-fade
+	opacity: .5
+	transition: opacity .15s linear
+	&.ng-enter
+		opacity: 0
+		&.ng-enter-active
+			opacity: .5
+	&.ng-leave
+		opacity: .5
+		&.ng-leave-active
+			opacity: 0
+
+ul.dropdown-menu li.disabled.nav-header > a
+	cursor: default
+	font-size: 12px
+	font-weight: bold
+	text-transform: uppercase
+
+.row > .col-md-1.vs-bracket
+	margin-left: -35px
+	margin-right: -21px
+	width: 43px
+	z-index: 100
+	
+	button
+		opacity: 1
+		position: absolute
+	button#reset
+		top: 9px
+		margin-left: 10px
+	button#vs
+		top: 67px
+.col-md-6.panel
+	padding: 0
+
+.text-yellow
+	color: #ffa500
+
+.row.event-pairing dl.dl-horizontal
+	position: absolute
+	top: 10px
+	bottom: 10px
+	left: 15px
+	right: 15px
+
+.list-group-item
+	&.alert-danger
+		background-color: #f2dede
+		border-color: #ebccd1
+		color: #a94442
+	&.alert-success
+		background-color: #dff0d8
+		border-color: #d6e9c6
+		color: #3c763d
+	&.alert-warning
+		background-color: #fcf8e3
+		border-color: #faebcc
+		color: #8a6d3b
+	&.alert-info
+		background-color: #d9edf7
+		border-color: #bce8f1
+		color: #31708f
+	
+	&.player-report
+		height: 200px
+		
+		h5
+			max-width: 114px !important
+			text-overflow: ellipsis
+			overflow: hidden
+			padding: 0.2em 4px 0.3em
+
+span.player-label
+	margin: 0 3px
+
+.session-history
+	.panel
+		.panel-body
+			height: 90px
+		&.team-1
+			.panel-body
+				padding-right: 28px
+		&.team-2
+			.panel-body
+				padding-left: 28px
+
+.badge.label-danger
+	background-color: #d9534f
+.badge.label-info
+	background-color: #5bc0de
+
+span.leader-star-wrap
+	width: 19px
+	display: inline-block
