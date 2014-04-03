@@ -43,13 +43,15 @@ exports = module.exports =
 					player.updatingerror = "Unknown exception occurred"
 					cb false, player
 			)) p
-		async.parallel callfunctions
+		async.parallel callfunctions #callback here should update the DB
 	
 	getprofile: (player, finalCb) ->
+		# after updates have finished set the lastupdate time and update the session stored player
 		cb = ->
 			player.lastupdate = Date.now()
+			# find player by player.pid in session and update
 			finalCb.apply this, arguments
-		if not player.scores? then player.scores = {}
+		if not player.scores? then player.scores = {win: 0, loss: 0}
 		opgg = (player, cb) =>
 			try
 				@getOpggProfile player, =>

@@ -63,7 +63,6 @@ script(id="newevent/newplayers.tpl.html" type="text/ng-template")
 								label {{player.name}}
 							.col-md-6
 								input.form-control(placeholder="In Game Name" name="inGameName" ng-model="player.inGameName" required)
-							// NEED DELETE BUTTON!!!!!
 				.modal-footer
 					button.btn.btn-success(type="button" ng-click="newPlayers.process()" ng-disabled="newPlayerForm.$pristine || newPlayerForm.$invalid") Submit
 

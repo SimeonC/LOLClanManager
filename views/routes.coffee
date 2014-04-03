@@ -14,6 +14,7 @@
 	@get '/newteam': renderManagerApp
 	@get '/newevent/*': renderManagerApp
 	@get '/event/*': renderManagerApp
+	@get '/settings': renderManagerApp
 	@get '/public/*': -> @render 'public_event.jade'
 	
 	@get '/partials/dashboard': -> @render 'partials/dashboard.jade'
@@ -23,3 +24,4 @@
 	@get '/partials/team': -> @render 'partials/team.jade'
 	@get '/partials/event': -> @render 'partials/event.jade'
 	@get '/partials/newevent': -> @render 'partials/newevent.jade'
+	@get '/partials/settings': -> @render 'partials/settings.jade'

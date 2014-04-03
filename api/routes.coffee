@@ -3,6 +3,7 @@ attendance = require './attendance_scraper'
 balancer = require './balance_algorithm'
 async = require 'async'
 roles = require './roles'
+formula = require './formula'
 
 @include = ->
 	
@@ -52,6 +53,18 @@ roles = require './roles'
 			if err then res.json 400, attending
 			else res.json 200, attending
 	
+	@post '/api/test-formula': (req, res) ->
+		tempaggregateFormula = formula.aggregateFormula
+		formula.aggregateFormula = req.body.formula
+		players = req.body.players
+		for key, player of players
+			formula.calculateAggregate player
+		res.json 200, players
+	
+	@post '/api/save-formula': (req, res) ->
+		formula.aggregateFormula = req.body.formula
+		# need to recalc all the formulas at this point
+	
 	@get '/api/load-data': (req, res) ->
 		# normally set during login
 		#@session.static_data = 
@@ -59,6 +72,7 @@ roles = require './roles'
 			clan_name: 'TAW LL5'
 			players:
 				p0:
+					pid: 'p0'
 					leader: true
 					name: 'Xanetia'
 					inGameName: 'Xan'
@@ -71,6 +85,8 @@ roles = require './roles'
 					scores:
 						loldb: 3626
 						opgg: 1142
+						win: 4
+						loss: 1
 						aggregate: 4768
 					rank:
 						label: 'Silver V'
@@ -90,6 +106,7 @@ roles = require './roles'
 						kda: '2.19:1'
 					]
 				p1:
+					pid: 'p1'
 					inGameName: 'NocturnalGannet'
 					name: 'NocturnalGannet'
 					server: 'oce'
@@ -98,7 +115,7 @@ roles = require './roles'
 							root: 'http://oce.op.gg/summoner/'
 							id: '330730'
 						loldb: 'http://loldb.gameguyz.com/analyze/default/index/200082221/9/330730'
-					scores: { loldb: 6828, opgg: 1629, aggregate: 8457 }
+					scores: { loldb: 6828, opgg: 1629, win: 2, loss: 8, aggregate: 8457 }
 					rank: { label: 'Gold V', ranktier: 11 }
 					preference: [ 3, 0, 4, 1, 2 ]
 					mostPlayedChampions:[
@@ -107,12 +124,13 @@ roles = require './roles'
 						{ champion: 'Cho\'Gath', games: '3', kda: '6.14:1' } 
 					]
 				p2:
+					pid: 'p2'
 					inGameName: 'Jesilicious'
 					server: 'oce'
 					urls:
 						opgg: { root: 'http://oce.op.gg/summoner/', id: '1610200' }
 						loldb: 'http://loldb.gameguyz.com/analyze/default/index/200802977/9/1610200'
-					scores: { loldb: 1766, opgg: 0, aggregate: 1766 }
+					scores: { loldb: 1766, opgg: 0, win: 2, loss: 0, aggregate: 1766 }
 					name: 'Jesilicious'
 					rank: { label: 'Unranked', ranktier: 0 }
 					preference: [ 1, 4, 3, 2, 0 ]
@@ -122,6 +140,7 @@ roles = require './roles'
 						{ champion: 'Gragas', games: '1', kda: '0.00:1' }
 					]
 				p3:
+					pid: 'p3'
 					server: 'oce'
 					name: 'ShawnAdriel'
 					inGameName: 'ShawnAdriel'

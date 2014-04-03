@@ -3,12 +3,8 @@ NewEventController = class NewEventController
 		angular.extend $scope, sharedFuncs($scope)
 		socket = sockets
 			playerUpdate: (player) ->
-				$scope.$apply ->
-					pid = $scope.playerIdByName player.name
-					$scope.data.players[pid] = player
-					player.updating = false
-					if player.updatingerror? and player.updatingerror isnt ''
-						$scope.removePlayer pid
+				if player.updatingerror? and player.updatingerror isnt ''
+					$scope.removePlayer player.pid
 		keyDownEvent = ($event) ->
 			if ($event.ctrlKey or $event.metaKey)
 				index = $scope.indexForKeycode($event.which)
@@ -34,12 +30,11 @@ NewEventController = class NewEventController
 				# if updated more than 24 hours ago - re-update
 				if updateQueueTimeout? then $timeout.cancel updateQueueTimeout
 				player.updating = true
-				# delay for a second to see how far up the queue we go
+				# delay for a second to see if we aren't adding any more
 				updateQueue.push player
 				updateQueueTimeout = $timeout ->
 					sendUpdateQueue()
 				, 2000
-				# delay for simulation, use HTTP in the end
 		$scope.multiFixPlayer = false
 		$scope.fixPlayer = (pid) ->
 			player = $scope.data.players[pid]
@@ -59,14 +54,14 @@ NewEventController = class NewEventController
 			show: -> @modal.show()
 			process: ->
 				for player in @players
-					if player.updatingerror?
+					if player.pid? and player.updatingerror?
 						# failed update player, possibly bad in game name
 						delete player.updatingerror
 						pid = player.pid
-						delete player.pid
 					else
 						# true new player
 						pid = "p#{Math.random() * 1000000000000000000}"
+						player.pid = pid
 						$scope.data.players[pid] = player
 						$scope.allPlayers.push pid
 					$scope.markPlayerPresent pid

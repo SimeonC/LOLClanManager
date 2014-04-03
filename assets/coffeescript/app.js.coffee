@@ -3,6 +3,7 @@
 
 #angular logic to go here
 osModifier = if navigator.appVersion.indexOf('Mac') > -1 then '&#8984;' else 'CTRL'
+socket = io.connect()
 module = angular.module 'lolclanmanager', ['ngRoute', 'ngAnimate', 'mgcrea.ngStrap'],
 	($routeProvider, $locationProvider) ->
 		$routeProvider.otherwise
@@ -32,9 +33,11 @@ module = angular.module 'lolclanmanager', ['ngRoute', 'ngAnimate', 'mgcrea.ngStr
 		$routeProvider.when '/newevent/:sessionId',
 			templateUrl: 'partials/newevent'
 			controller: NewEventController
+		$routeProvider.when '/settings',
+			templateUrl: 'partials/settings'
+			controller: SettingsController
 		$locationProvider.html5Mode true
-module.service 'data', ['$http', 'sockets', ($http, sockets) ->
-	socket = sockets()
+module.service 'data', ['$http', ($http) ->
 	dataReturn =
 		loading: true
 	$http.get('/api/load-data')
@@ -67,12 +70,13 @@ module.factory 'sharedFuncs', -> ($scope) ->
 	formClass: (form, name) ->
 		'has-success': form[name].$dirty && form[name].$valid
 		'has-error': form[name].$invalid
-socket = io.connect()
-socket.on 'notification', (data) ->
-	console.log data
-module.factory 'sockets', -> (callbacks) ->
+module.factory 'sockets', ($rootScope, data) -> (callbacks) ->
 	if callbacks?
-		if callbacks.playerUpdate? then socket.on 'playerupdate', callbacks.playerUpdate
+		if callbacks.playerUpdate? then socket.on 'playerupdate', (player) ->
+			$rootScope.$apply ->
+				data.players[player.pid] = player
+				player.updating = false
+				callbacks.playerUpdate player
 	socket
 
 class MainController

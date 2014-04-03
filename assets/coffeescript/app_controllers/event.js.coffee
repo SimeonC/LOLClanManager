@@ -10,11 +10,13 @@ EventController = class EventController
 			"#{roles[0]}, #{roles[1]}, #{roles[2]}"
 		$scope.setWinner = (pair, winteam) ->
 			# win flag is either 'win' or 'loss'
-			baseZero = (value) -> value = Math.min value, 0
+			increment = (value, increment) ->
+				value = Math.min value + increment, 0
 			playerTeamMod = (teamWin, teamLoss, increment) ->
 				incrementVal = 1
 				if not increment then incrementVal = -1
 				if teamWin? then angular.forEach teamWin.players, (pid) ->
+					increment $scope.data.players[pid].scores.win, incrementVal
 					if not $scope.session.playerTeamMatrix[pid]? then $scope.session.playerTeamMatrix[pid] = {}
 					if not $scope.session.playerTeamMatrix[pid][teamWin.id]? then $scope.session.playerTeamMatrix[pid][teamWin.id] =
 						against:
@@ -23,8 +25,7 @@ EventController = class EventController
 						with:
 							win: 0
 							loss: 0
-					$scope.session.playerTeamMatrix[pid][teamWin.id].with.win += incrementVal
-					$scope.session.playerTeamMatrix[pid][teamWin.id].with.win = Math.max 0, $scope.session.playerTeamMatrix[pid][teamWin.id].with.win
+					increment $scope.session.playerTeamMatrix[pid][teamWin.id].with.win, incrementVal
 					if teamLoss?
 						if not $scope.session.playerTeamMatrix[pid][teamLoss.id]? then $scope.session.playerTeamMatrix[pid][teamLoss.id] =
 							against:
@@ -33,10 +34,18 @@ EventController = class EventController
 							with:
 								win: 0
 								loss: 0
-						$scope.session.playerTeamMatrix[pid][teamLoss.id].against.win += incrementVal
-						$scope.session.playerTeamMatrix[pid][teamLoss.id].against.win = Math.max 0, $scope.session.playerTeamMatrix[pid][teamLoss.id].against.win
+						increment $scope.session.playerTeamMatrix[pid][teamLoss.id].against.win, incrementVal
 				if teamLoss? then angular.forEach teamLoss.players, (pid) ->
+					increment $scope.data.players[pid].scores.loss, incrementVal
 					if not $scope.session.playerTeamMatrix[pid]? then $scope.session.playerTeamMatrix[pid] = {}
+					if not $scope.session.playerTeamMatrix[pid][teamLoss.id]? then $scope.session.playerTeamMatrix[pid][teamLoss.id] =
+						against:
+							win: 0
+							loss: 0
+						with:
+							win: 0
+							loss: 0
+					increment $scope.session.playerTeamMatrix[pid][teamLoss.id].with.loss, incrementVal
 					if teamWin?
 						if not $scope.session.playerTeamMatrix[pid][teamWin.id]? then $scope.session.playerTeamMatrix[pid][teamWin.id] =
 							against:
@@ -45,17 +54,7 @@ EventController = class EventController
 							with:
 								win: 0
 								loss: 0
-						$scope.session.playerTeamMatrix[pid][teamWin.id].against.loss += incrementVal
-						$scope.session.playerTeamMatrix[pid][teamWin.id].against.loss = Math.max 0, $scope.session.playerTeamMatrix[pid][teamWin.id].against.loss
-					if not $scope.session.playerTeamMatrix[pid][teamLoss.id]? then $scope.session.playerTeamMatrix[pid][teamLoss.id] =
-						against:
-							win: 0
-							loss: 0
-						with:
-							win: 0
-							loss: 0
-					$scope.session.playerTeamMatrix[pid][teamLoss.id].with.loss += incrementVal
-					$scope.session.playerTeamMatrix[pid][teamLoss.id].with.loss = Math.max 0, $scope.session.playerTeamMatrix[pid][teamLoss.id].with.loss
+						increment $scope.session.playerTeamMatrix[pid][teamWin.id].against.loss, incrementVal
 					
 			# add for change to
 			if winteam is 1 then playerTeamMod pair.team1, pair.team2, true
