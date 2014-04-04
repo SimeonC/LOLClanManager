@@ -7,7 +7,7 @@ SettingsController = class SettingsController
 					$scope.players[player.pid] = player
 		
 		$scope.data = data
-		$scope.formula = $scope.data.aggregateFormula
+		$scope.lastformula = $scope.formula = $scope.data.aggregateFormula
 		$scope.allPlayers = []
 		$scope.players = {}
 		# add 10 players for demo purposes
@@ -26,6 +26,7 @@ SettingsController = class SettingsController
 				players: $scope.players
 			).success (players) ->
 				$scope.players = players
+				$scope.lastformula = $scope.formula
 				if $scope.debugPid isnt '' then $scope.debugPlayer $scope.debugPid
 		
 		$scope.selectedDebug = [
@@ -37,11 +38,11 @@ SettingsController = class SettingsController
 		$scope.debugPlayer = (pid) ->
 			$scope.selectedDebug = []
 			$scope.debugPid = pid
-			formulaLines = $scope.formula.split '\n'
+			formulaLines = $scope.lastformula.split '\n'
 			playerScores = $scope.players[pid].scores
 			if formulaLines.length <= 1
 				$scope.selectedDebug = [
-					line: $scope.formula
+					line: $scope.lastformula
 					result: playerScores.aggregate
 				]
 			else for i in [0...formulaLines.length]

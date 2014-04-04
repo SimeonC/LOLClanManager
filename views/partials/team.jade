@@ -22,14 +22,19 @@
 			btn.btn.btn-default(ng-click="sortOrder = 1" ng-class="{active: sortOrder == 1}") Score
 		.list-group
 			a.list-group-item(ng-repeat="pid in availablePlayersList | orderBy: getSortOrder:sortOrder == 1" ng-click="attachPlayer(pid)" class="alert-success" ng-class="{'alert-warning': onOtherTeam(pid), 'alert-info': data.players[pid].updating, 'alert-danger': data.players[pid].updatingerror && data.players[pid].updatingerror != ''}")
-				!= helpers.outputPlayer('pid', 'teamId', false, true, true)
+				!= helpers.outputPlayer('pid', undefined, false, true, true)
 	.col-md-4
 		h4 Currently Assigned Players
 		.list-group
-			a.list-group-item(ng-repeat="pid in attachedPlayers | orderBy: getSortOrder2" ng-click="unattachPlayer(pid)")
+			.list-group-item(ng-repeat="pid in attachedPlayers | orderBy: getSortOrder2")
 				!= helpers.outputPlayer('pid', 'teamId', false, true, true)
+				.btn-group.pull-right(ng-hide="data.players[pid].updating || (data.players[pid].updatingerror && data.players[pid].updatingerror != '')")
+					a.btn.btn-xs.btn-default(ng-click="unattachPlayer(pid)" tooltip="Remove From Team")
+						i.fa.fa-toggle-left
+					a.btn.btn-xs.btn-default(ng-click="toggleLeader(pid)" Tooltip="Assign to Active Team")
+						i.fa.fa-star(ng-class="{'text-danger': pid == team.leader}")
 	.col-md-5
-		h4 Stats
+		h4 Stats {{team.leader}}
 		table.table.table-bordered
 			tr.info
 				th Team Wins

@@ -8,7 +8,7 @@ TeamController = class TeamController
 		$scope.sessionId = $routeParams.sessionId
 		
 		# copy to a temp array for cancel functions
-		$scope.attachedPlayers = (pid for pid in $scope.team.players)
+		$scope.attachedPlayers = $scope.team.players
 		$scope.statsOrder = (pid for pid, value of $scope.data.players)
 		$scope.playersOnOtherTeams = []
 		angular.forEach $scope.session.teams, (value, key) -> if key isnt $scope.teamId then $scope.playersOnOtherTeams = $scope.playersOnOtherTeams.concat value.players
@@ -18,13 +18,19 @@ TeamController = class TeamController
 		$scope.onOtherTeam = (pid) -> $scope.playersOnOtherTeams.indexOf(pid) isnt -1
 		
 		$scope.attachPlayer = (pid) ->
+			if $scope.onOtherTeam pid
+				for tid, team of $scope.session.teams
+					if team.players.indexOf(pid) isnt -1
+						$scope.playersOnOtherTeams.splice $scope.playersOnOtherTeams.indexOf(pid), 1
+						team.players.splice team.players.indexOf(pid), 1
+						break
 			$scope.attachedPlayers.push pid
 			$scope.availablePlayersList.splice $scope.availablePlayersList.indexOf(pid), 1
 		
 		$scope.unattachPlayer = (pid) ->
 			$scope.attachedPlayers.splice $scope.attachedPlayers.indexOf(pid), 1
 			$scope.availablePlayersList.push pid
-		
+		$scope.toggleLeader = (pid) -> if $scope.team.leader is pid then delete $scope.team.leader else $scope.team.leader = pid
 		$scope.sortOrder = 1
 		$scope.getSortOrder = (pid) ->
 			( # if on other team push to bottom of list or updating
@@ -40,8 +46,8 @@ TeamController = class TeamController
 				else 0
 			) +
 			( # rig so leaders allways show at the top!
-				if $scope.sortOrder is 1 then (2-$scope.leaderFirst($scope.team)(pid)) * 1000000 + $scope.playerScoreByRef pid
+				if $scope.sortOrder is 1 then (2-$scope.leaderFirst($scope.team)(pid)) * 1000000 - $scope.playerScoreByRef pid
 				else $scope.leaderFirst($scope.team)(pid) + $scope.playerNameByRef pid
 			)
 		
-		$scope.getSortOrder2 = (pid) -> $scope.leaderFirst($scope.team)(pid) + $scope.playerNameByRef pid
+		$scope.getSortOrder2 = (pid) -> $scope.leaderFirst($scope.team)(pid) * 1000000 - $scope.playerScoreByRef pid

@@ -74,7 +74,9 @@ formula = require './formula'
 			clan_name: 'TAW LL5'
 			aggregateFormula: """
 				a = (loldb + opgg) * (ranktier + 1)
-				wl = win / max(win + loss, 1)
+				w = win + 5
+				l = loss + 5
+				wl = w / max(w + l, 1)
 				0.5*a + ifElse(win + loss == 0, 0.5, wl)*a
 			"""
 			preferenceIdNames: roles.names
@@ -156,15 +158,15 @@ formula = require './formula'
 					updatingerror: "Error Occured Updating LOLDB profile"
 			sessions:
 				s0:
-					name: 'session1'
+					name: 'Tuesday Practice'
 					teams: 
 						t0:
-							name: 'team1'
+							name: 'The Musketeers'
 							players: ['p0']
 							win: 3
 							loss: 2
 						t1:
-							name: 'team2'
+							name: 'Alditha Alma'
 							leader: 'p1'
 							players: ['p1','p2']
 							win: 2
@@ -173,7 +175,7 @@ formula = require './formula'
 						p0:
 							t0:
 								against:
-									win: 0
+									win: 3
 									loss: 3
 								with:
 									win: 1
@@ -191,7 +193,7 @@ formula = require './formula'
 									win: 0
 									loss: 3
 								with:
-									win: 1
+									win: 3
 									loss: 0
 					defaultPairings: [
 						['t0','t1']

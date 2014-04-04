@@ -4,7 +4,9 @@ exports = module.exports =
 	# load by user settings!
 	aggregateFormula: """
 		a = (loldb + opgg) * (ranktier + 1)
-		wl = win / max(win + loss, 1)
+		w = win + 5
+		l = loss + 5
+		wl = w / max(w + l, 1)
 		0.5*a + ifElse(win + loss == 0, 0.5, wl)*a
 	"""
 	calculateAggregate: (player) ->

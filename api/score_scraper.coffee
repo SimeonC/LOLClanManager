@@ -98,7 +98,7 @@ exports = module.exports =
 				player.rank =
 					label: if rankString is 'NONE' then 'Unranked' else rankString
 					ranktier: rankTier
-					image: if rankString is 'NONE' then 'unranked' else "#{rankData[0].toLowerCase()}_#{rankTier % 5}.png"
+					image: if rankString is 'NONE' then 'unranked.png' else "#{rankData[0].toLowerCase()}_#{rankTier % 5}.png"
 				if not player.preference? or player.preference.length isnt 5
 					prefs = JSON.parse $('div.mBoxList.clearfix div.module div.fr.mBox.personProper div.mBoxConList.clearfix script').text().trim().match(/// data:([^\]]*\]) ///)[1]
 					prefs.sort (a,b) -> b.value - a.value

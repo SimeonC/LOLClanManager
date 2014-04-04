@@ -27,8 +27,7 @@ block content
 						script(id="appnav/session-dropdown.tpl.html" type="text/ng-template")
 							ul.dropdown-menu#sessions
 								li(ng-repeat="(key, session) in data.sessions | orderBy: session.name" data-match-route="session/{{key}}")
-									a(href="session/{{key}}")
-										{{session.name}}
+									a(href="session/{{key}}") {{session.name}}
 					li(data-match-route="settings")
 						a(href="settings") Settings
 		.view-animate-container

@@ -48,12 +48,26 @@ h1 Player
 			.col-md-6
 				.panel.panel-default
 					.panel-heading
-						h3.panel-title Total Session Win Percentage
-					.panel-body
+						h3.panel-title Session Stats
+					.panel-body(ng-if="player.scores")
 						.progress(ng-if="player.scores")
 							.progress-bar.progress-bar-info(role="progressbar" aria-valuenow="60" style="width: {{winPercent()*100}}%;") Win {{winPercent()*100 | number:2}}%
 							.progress-bar.progress-bar-danger(role="progressbar" aria-valuenow="60" style="width: {{(1-winPercent())*100}}%;") Loss {{(1-winPercent())*100 | number:2}}%
-						p(ng-if="!player.scores") No Games Recorded
+						table.table.table-condensed
+							tr
+								th
+								th.info Wins
+								th.danger Losses
+							tr
+								th With
+								td.info {{sessionstats.wins.with.count}} {{sessionstats.wins.with.team}}
+								td.danger {{sessionstats.losses.with.count}} {{sessionstats.losses.with.team}}
+							tr
+								th Against
+								td.info {{sessionstats.wins.against.count}} {{sessionstats.wins.against.team}}
+								td.danger {{sessionstats.losses.against.count}} {{sessionstats.losses.against.team}}
+					.panel-body(ng-if="!player.scores")
+						p No Games Recorded
 			.col-md-6
 				.panel.panel-default
 					.panel-heading
