@@ -1,12 +1,18 @@
 PlayerController = class PlayerController
-	constructor: ($scope, $routeParams, data, sharedFuncs) ->
+	constructor: ($scope, $routeParams, data, sharedFuncs, sockets) ->
 		angular.extend $scope, sharedFuncs($scope)
+		socket = sockets
+			playerUpdate: (player) ->
+				angular.extendDeep $scope.data.players[$routeParams.playerId], player.player
+				if not $scope.player.leader then $scope.player.leader = false
+		$scope.reloadFromServers = ->
+			$scope.player.updating = true
+			delete $scope.player.updatingerror
+			socket.emit 'update-players',
+				players: [$scope.player]
+				localonly: false
+		
 		$scope.data = data
 		$scope.player = $scope.data.players[$routeParams.playerId]
-		$scope.player.win = 0
-		$scope.player.loss = 0
-		angular.forEach $scope.data.sessions, (session) ->
-			angular.forEach session.playerTeamMatrix[$routeParams.playerId], (team) ->
-				$scope.player.win += team.win
-				$scope.player.loss += team.loss
-		$scope.player.winpercent = if $scope.player.loss is 0 and $scope.player.win is 0 then 0 else if $scope.player.loss is 0 then 100 else $scope.player.win / $scope.player.loss
+		if not $scope.player.leader then $scope.player.leader = false
+		$scope.winPercent = -> if $scope.player.scores? then $scope.player.scores.win / Math.max 1, $scope.player.scores.win + $scope.player.scores.loss else 0

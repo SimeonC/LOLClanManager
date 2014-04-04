@@ -15,6 +15,21 @@ html
 		link(href="//netdna.bootstrapcdn.com/bootstrap/3.1.1/css/bootstrap.min.css", rel="stylesheet")
 		link(href="http://netdna.bootstrapcdn.com/font-awesome/4.0.3/css/font-awesome.css", rel="stylesheet")
 		!= css('angular-motion.min.css')
+		script(type="text/javascript").
+			angular.extendDeep = function extendDeep(dst) {
+				angular.forEach(arguments, function(obj) {
+					if (obj !== dst) {
+						angular.forEach(obj, function(value, key) {
+							if (dst[key] && dst[key].constructor && dst[key].constructor === Object) {
+								extendDeep(dst[key], value);
+							} else {
+								dst[key] = value;
+							}     
+						});   
+					}
+				});
+				return dst;
+			};
 		block head
 	body
 		block content

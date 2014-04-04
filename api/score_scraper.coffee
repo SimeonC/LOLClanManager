@@ -33,13 +33,12 @@ exports = module.exports =
 			callfunctions.push ((player) => ((callback) =>
 				# for passback updating
 				player.updating = false
+				delete player.updatingerror
 				try
 					if not player.urls? or not player.urls.opgg? or not player.urls.opgg.root? or not player.urls.opgg.id? or not player.urls.loldb?
 						@getbyname player, (err, player) => @getprofile player, cb
 					else @getprofile player, cb
 				catch any
-					console.log any
-					console.log player
 					player.updatingerror = "Unknown exception occurred"
 					cb false, player
 			)) p
@@ -55,7 +54,7 @@ exports = module.exports =
 		opgg = (player, cb) =>
 			try
 				@getOpggProfile player, =>
-					if not player.updatingerror? or player.updatingerror is '' then calculator.calculateAggregate player.scores
+					if not player.updatingerror? or player.updatingerror is '' then calculator.calculateAggregate player
 					cb false, player
 			catch error
 				player.updatingerror = "Error Occured Updating OPGG profile"
@@ -99,6 +98,7 @@ exports = module.exports =
 				player.rank =
 					label: if rankString is 'NONE' then 'Unranked' else rankString
 					ranktier: rankTier
+					image: if rankString is 'NONE' then 'unranked' else "#{rankData[0].toLowerCase()}_#{rankTier % 5}.png"
 				if not player.preference? or player.preference.length isnt 5
 					prefs = JSON.parse $('div.mBoxList.clearfix div.module div.fr.mBox.personProper div.mBoxConList.clearfix script').text().trim().match(/// data:([^\]]*\]) ///)[1]
 					prefs.sort (a,b) -> b.value - a.value

@@ -44,6 +44,8 @@ module.service 'data', ['$http', ($http) ->
 		.success (data) ->
 			dataReturn.loading = false
 			angular.extend dataReturn, data
+			dataReturn.allPlayers = []
+			dataReturn.allPlayers.push key for key of data.players
 			socket.emit 'set_channel',
 				clan_name: data.clan_name
 		.error (data, status) ->
@@ -72,11 +74,13 @@ module.factory 'sharedFuncs', -> ($scope) ->
 		'has-error': form[name].$invalid
 module.factory 'sockets', ($rootScope, data) -> (callbacks) ->
 	if callbacks?
-		if callbacks.playerUpdate? then socket.on 'playerupdate', (player) ->
+		if callbacks.playerUpdate? then socket.on 'playerupdate', (resp) ->
 			$rootScope.$apply ->
-				data.players[player.pid] = player
-				player.updating = false
-				callbacks.playerUpdate player
+				resp.player.updating = false
+				if not resp.localonly
+					delete data.players[resp.player.pid].updatingerror
+					angular.extendDeep data.players[resp.player.pid], resp.player
+				callbacks.playerUpdate resp.player
 	socket
 
 class MainController

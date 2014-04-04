@@ -2,7 +2,11 @@ math = require('mathjs')()
 
 exports = module.exports =
 	# load by user settings!
-	aggregateFormula: 'loldb + opgg'
+	aggregateFormula: """
+		a = (loldb + opgg) * (ranktier + 1)
+		wl = win / max(win + loss, 1)
+		0.5*a + ifElse(win + loss == 0, 0.5, wl)*a
+	"""
 	calculateAggregate: (player) ->
 		temp = {}
 		temp[key] = value for key, value of player.scores

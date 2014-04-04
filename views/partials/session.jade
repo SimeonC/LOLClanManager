@@ -1,7 +1,7 @@
 .row
 	.col-lg-12
 		h2 {{session.name}}
-			a.btn.btn-default.pull-right(href="dashboard") Dashboard
+			a.btn.btn-success.pull-right(href="newevent/{{sessionKey}}") New Event
 .row
 	.col-lg-12
 		h2 Teams
@@ -19,8 +19,7 @@
 					span.badge.label-danger {{team.loss}}
 				.list-group
 					a.list-group-item(ng-repeat="pid in team.players | orderBy: leaderFirst(team)" href="player/{{pid}}")
-						!= helpers.outputLeaderStar('pid', 'team')
-						| {{data.players[pid].name}}
+						!= helpers.outputPlayer('pid', 'team')
 .row
 	.col-lg-12
 		h2 History
@@ -37,8 +36,7 @@
 					p Total Score: ({{teamScore(pair.team1)}})
 					p
 						span.player-label.label(ng-repeat="pid in pair.team1.players | orderBy: leaderFirst(session.teams[pair.team1.id]):true" ng-class="{'label-default': pair.winner == 0, 'label-info': pair.winner == 1, 'label-danger': pair.winner == 2}")
-							!= helpers.outputLeaderStar('pid', 'pair.team1.id')
-							| {{data.players[pid].name}}
+							!= helpers.outputPlayer('pid', 'pair.team1.id')
 			.col-md-1.vs-bracket
 				button.btn.btn-warning.disabled#vs Vs
 			.col-md-6.panel.team-2(ng-class="{'panel-default': pair.winner == 0, 'panel-info': pair.winner == 2, 'panel-danger': pair.winner == 1}")
@@ -51,7 +49,6 @@
 					p Total Score: ({{teamScore(pair.team2)}})
 					p
 						span.player-label.label(ng-repeat="pid in pair.team2.players | orderBy: leaderFirst(session.teams[pair.team2.id])" ng-class="{'label-default': pair.winner == 0, 'label-info': pair.winner == 2, 'label-danger': pair.winner == 1}")
-							!= helpers.outputLeaderStar('pid', 'pair.team2.id')
-							| {{data.players[pid].name}}
+							!= helpers.outputPlayer('pid', 'pair.team2.id')
 				.panel-body(ng-if="!pair.team2")
 					p No Data.

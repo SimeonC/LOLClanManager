@@ -3,23 +3,34 @@
 		h3 Settings
 		p Available variables are 'loldb' 'opgg' 'ranktier' 'win' 'loss' (win and loss being recorded by the system only)
 		p The result of the last line of text will be the aggregate score value.
-		p For multi-line forumla click on a name on the right to see a detailed breakdown.
+		p For multi-line formula click on a name on the right to see a detailed breakdown.
 		textarea.form-control(rows="4" ng-model="formula")
 		button.btn.btn-primary(ng-click="reCalcPlayers()") Re-calculate
 	.col-md-8
 		h3 Players
 		.row
-			.col-md-6
+			.col-md-4
 				ul.list-group
-					li.list-group-item(ng-repeat="pid in allPlayers | orderBy: playerScoreByRef:true" ng-class="{'alert-info': pid == debugPid}" ng-click="debugPlayer(pid)")
+					li.list-group-item(ng-repeat="pid in allPlayers | orderBy: orderByScore:true" ng-class="{'alert-info': pid == debugPid}" ng-click="debugPlayer(pid)")
 						!= helpers.outputLeaderStar('pid', undefined, true, false)
-						| {{players[pid].name}} ({{players[pid].scores.aggregate}})
+						| {{players[pid].name}} ({{players[pid].scores.aggregate | number}})
 						i.fa.fa-spinner.pull-right.fa-spin(ng-show="players[pid].updating")
-			.col-md-6
-				table.table.table-bordered
-					tr
-						th Formula
-						th Result
-					tr(ng-repeat="expr in selectedDebug")
-						td {{expr.line}}
-						td {{expr.result}}
+			.col-md-8
+				.panel.panel-default
+					.panel-heading
+						h3.panel-title Debug Data
+					.panel-body
+						table.table.table-bordered
+							tr
+								th Formula
+								th Result
+							tr(ng-repeat="expr in selectedDebug")
+								td {{expr.line}}
+								td {{expr.result}}
+						table.table.table-bordered.table-condensed
+							tr
+								th Variable Name
+								th Value
+							tr(ng-repeat="(key, value) in players[debugPid].scores")
+								td {{key}}
+								td {{value}}

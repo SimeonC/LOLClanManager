@@ -3,9 +3,34 @@ extends layout
 block head
 	!= css('app.css')
 	!= js('app.js')
-
+	
 block content
 	#app.container(ng-app='lolclanmanager', ng-controller="MainController as main")
+		.navbar.navbar-inverse.navbar-fixed-top(bs-navbar)
+			.container
+				ul.nav.navbar-nav
+					li(data-match-route="manager")
+						a(href="manager") Home
+					li(data-match-route="dashboard")
+						a(href="dashboard") Dashboard
+					li.dropdown(data-match-route="player/*")
+						a.dropdown-toggle(data-toggle="dropdown" bs-dropdown data-template="appnav/player-dropdown.tpl.html") Players
+							b.caret
+						script(id="appnav/player-dropdown.tpl.html" type="text/ng-template")
+							ul.dropdown-menu#players
+								li(ng-repeat="key in data.allPlayers | orderBy: playerNameByRef" data-match-route="player/{{key}}")
+									a(href="player/{{key}}" ng-class="{'dropdown-danger': data.players[key].updatingerror && data.players[key].updatingerror != ''}")
+										!= helpers.outputPlayer('key')
+					li.dropdown(data-match-route="session/*")
+						a.dropdown-toggle(data-toggle="dropdown" bs-dropdown data-template="appnav/session-dropdown.tpl.html") Sessions
+							b.caret
+						script(id="appnav/session-dropdown.tpl.html" type="text/ng-template")
+							ul.dropdown-menu#sessions
+								li(ng-repeat="(key, session) in data.sessions | orderBy: session.name" data-match-route="session/{{key}}")
+									a(href="session/{{key}}")
+										{{session.name}}
+					li(data-match-route="settings")
+						a(href="settings") Settings
 		.view-animate-container
 			.view-animate(ng-if="!data.loading", ng-view)
 			h1(ng-if="data.loading") Loading

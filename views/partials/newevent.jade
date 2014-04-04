@@ -140,10 +140,7 @@ script(id="newevent/placements.tpl.html" type="text/ng-template")
 			button.btn.btn-primary(type="submit") Add
 		.list-group
 			a.list-group-item(ng-repeat="pid in allPlayers | filter: playerFilter | orderBy: playerNameByRef" ng-click="markPlayerPresent(pid)" ng-class="{'alert-danger': data.players[pid].updatingerror && data.players[pid].updatingerror != ''}")
-				!= helpers.outputLeaderStar('pid', undefined, true, false)
-				| {{data.players[pid].name}}
-				i.fa.fa-spinner.fa-spin.pull-right(ng-show="data.players[pid].updating")
-				i.fa.fa-exclamation-triangle.pull-right(ng-show="!data.players[pid].updating && data.players[pid].updatingerror && data.players[pid].updatingerror != ''")
+				!= helpers.outputPlayer('pid', undefined, true, false)
 	// present players
 	.col-md-4
 		h3 Present Players
@@ -163,15 +160,12 @@ script(id="newevent/placements.tpl.html" type="text/ng-template")
 			btn.btn.btn-default(ng-click="sortOrder = 1" ng-class="{active: sortOrder == 1}") Score
 		ul.list-group
 			li.list-group-item(ng-repeat="pid in presentPlayers | filter: presentPlayerFilter | orderBy: getSortOrder()" ng-class="{'alert-danger': data.players[pid].updatingerror && data.players[pid].updatingerror != ''}")
-				!= helpers.outputLeaderStar('pid', undefined, true, false)
-				| {{data.players[pid].name}} ({{data.players[pid].scores.aggregate}})
-				i.fa.fa-spinner.pull-right.fa-spin(ng-show="data.players[pid].updating")
+				!= helpers.outputPlayer('pid', undefined, true, false, true)
 				.btn-group.pull-right(ng-hide="data.players[pid].updating || (data.players[pid].updatingerror && data.players[pid].updatingerror != '')")
 					a.btn.btn-xs.btn-default(ng-click="removePlayer(pid)" tooltip="Remove From Present")
 						i.fa.fa-toggle-left
 					a.btn.btn-xs.btn-default(ng-click="addPlayerToActiveTeam(pid)" Tooltip="Assign to Active Team")
 						i.fa.fa-toggle-right
-				i.fa.fa-exclamation-triangle.pull-right(ng-click="fixPlayer(pid)" ng-show="!data.players[pid].updating && data.players[pid].updatingerror && data.players[pid].updatingerror != ''")
 	// teams allocation
 	.col-md-5
 		h3 Teams&nbsp;
@@ -195,8 +189,6 @@ script(id="newevent/placements.tpl.html" type="text/ng-template")
 				.list-group
 					b.list-group-item Players
 					a.list-group-item(ng-repeat="pid in team.players | orderBy: getSortOrder(session.teams[tid])" ng-click="unassign(pid, tid)")
-						!= helpers.outputLeaderStar('pid', 'tid', true)
-						| {{data.players[pid].name}}
-						i.fa.fa-spinner.pull-right.fa-spin(ng-show="data.players[pid].updating")
+						!= helpers.outputPlayer('pid', 'tid', true)
 				p Total Score: {{totalScore(team)}}
 				p Average Score: {{averageScore(team)}}

@@ -46,7 +46,9 @@ formula = require './formula'
 		# console.log "Update Players"
 		scraper.updatePlayers @data.players, (err, player) =>
 			# console.log "Broadcast update done for #{player.name}  in #{@client.room}, clients in room: #{@io.sockets.clients(@client.room).length}"
-			@broadcast_to @client.room, 'playerupdate', player
+			@broadcast_to @client.room, 'playerupdate',
+				player: player
+				localonly: @data.localonly
 	
 	@post '/api/get-attendance': (req, res) ->
 		attendance.getAttendance "#{req.body.eventid}", req.body.username, req.body.password, (err, attending) ->
@@ -70,6 +72,12 @@ formula = require './formula'
 		#@session.static_data = 
 		static_data = 
 			clan_name: 'TAW LL5'
+			aggregateFormula: """
+				a = (loldb + opgg) * (ranktier + 1)
+				wl = win / max(win + loss, 1)
+				0.5*a + ifElse(win + loss == 0, 0.5, wl)*a
+			"""
+			preferenceIdNames: roles.names
 			players:
 				p0:
 					pid: 'p0'
@@ -87,10 +95,11 @@ formula = require './formula'
 						opgg: 1142
 						win: 4
 						loss: 1
-						aggregate: 4768
+						aggregate: 43389
 					rank:
 						label: 'Silver V'
-						ranktier: 6 
+						ranktier: 6
+						image: "silver_#{6 - 6 % 5}.png"
 					preference: [ 1, 0, 4, 2, 3 ]
 					mostPlayedChampions: [
 						champion: 'Thresh'
@@ -115,8 +124,8 @@ formula = require './formula'
 							root: 'http://oce.op.gg/summoner/'
 							id: '330730'
 						loldb: 'http://loldb.gameguyz.com/analyze/default/index/200082221/9/330730'
-					scores: { loldb: 6828, opgg: 1629, win: 2, loss: 8, aggregate: 8457 }
-					rank: { label: 'Gold V', ranktier: 11 }
+					scores: { loldb: 6828, opgg: 1629, win: 2, loss: 8, aggregate: 71039 }
+					rank: { label: 'Gold V', ranktier: 11, image: "gold_#{6 - 11 % 5}.png" }
 					preference: [ 3, 0, 4, 1, 2 ]
 					mostPlayedChampions:[
 						{ champion: 'Renekton', games: '10', kda: '6.79:1' }
@@ -130,9 +139,9 @@ formula = require './formula'
 					urls:
 						opgg: { root: 'http://oce.op.gg/summoner/', id: '1610200' }
 						loldb: 'http://loldb.gameguyz.com/analyze/default/index/200802977/9/1610200'
-					scores: { loldb: 1766, opgg: 0, win: 2, loss: 0, aggregate: 1766 }
+					scores: { loldb: 1766, opgg: 0, win: 2, loss: 0, aggregate: 2649 }
 					name: 'Jesilicious'
-					rank: { label: 'Unranked', ranktier: 0 }
+					rank: { label: 'Unranked', ranktier: 0, image: 'unranked.png' }
 					preference: [ 1, 4, 3, 2, 0 ]
 					mostPlayedChampions: [
 						{ champion: 'Kha\'Zix', games: '7', kda: '2.40:1' }
@@ -171,10 +180,10 @@ formula = require './formula'
 									loss: 0
 							t1:
 								against:
-									win: 0
-									loss: 3
-								with:
 									win: 1
+									loss: 2
+								with:
+									win: 2
 									loss: 0
 						p1:
 							t1:

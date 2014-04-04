@@ -5,6 +5,7 @@ TeamController = class TeamController
 		$scope.session = $scope.data.sessions[$routeParams.sessionId]
 		$scope.team = $scope.data.sessions[$routeParams.sessionId].teams[$routeParams.teamId]
 		$scope.teamId = $routeParams.teamId
+		$scope.sessionId = $routeParams.sessionId
 		
 		# copy to a temp array for cancel functions
 		$scope.attachedPlayers = (pid for pid in $scope.team.players)
@@ -26,8 +27,14 @@ TeamController = class TeamController
 		
 		$scope.sortOrder = 1
 		$scope.getSortOrder = (pid) ->
-			( # if on other team push to bottom of list
-				if $scope.playersOnOtherTeams.indexOf(pid) isnt -1
+			( # if on other team push to bottom of list or updating
+				if $scope.data.players[pid].updatingerror and $scope.data.players[pid].updatingerror isnt ''
+					if $scope.sortOrder is 1 then -300000000
+					else 'c'
+				else if $scope.data.players[pid].updating
+					if $scope.sortOrder is 1 then -200000000
+					else 'b'
+				else if $scope.playersOnOtherTeams.indexOf(pid) isnt -1
 					if $scope.sortOrder is 1 then -100000000
 					else 'a'
 				else 0

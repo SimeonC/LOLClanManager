@@ -17,3 +17,10 @@ exports = module.exports =
 		""") + """
 		</span>
 		"""
+	outputPlayer: (playerIdVar, teamIdVar, outlineStar=false, textYellow=true, showScore=false) ->
+		"""
+			#{@outputLeaderStar playerIdVar, teamIdVar, outlineStar, textYellow}
+			{{data.players[#{playerIdVar}].name}}#{if showScore then " ({{data.players[#{playerIdVar}].scores.aggregate}})" else ''}
+			<i class="fa fa-spinner fa-spin pull-right" ng-show="data.players[#{playerIdVar}].updating"></i>
+			<i class="fa fa-exclamation-triangle pull-right" ng-show="!data.players[#{playerIdVar}].updating && data.players[#{playerIdVar}].updatingerror && data.players[#{playerIdVar}].updatingerror != ''"></i>
+		"""

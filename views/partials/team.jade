@@ -1,27 +1,35 @@
-p {{team}}
 .row
 	.col-md-12
-		h2 Team {{team.name}} {{teamId}}
+		h2 Team {{team.name}}
+			a.btn.btn-default.pull-right(href="session/{{sessionId}}") Back To Session
 .row
 	.col-md-3
-		p player list {{playersOnOtherTeams}}
+		h4 Players
+		a.label.label-info.pull-right(bs-popover data-placement="bottom" data-template="team/playerkey-popover.tpl.html")
+			i.fa.fa-key
+		script(id="team/playerkey-popover.tpl.html" type="text/ng-template")
+			.popover.bottom(style="width: 231px;")
+				.arrow
+				h3.popover-title Player Key
+				.popover-content
+					ul.list-group
+						li.list-group-item.alert-success Player <b>Available</b>
+						li.list-group-item.alert-warning Player on <b>Other</b> team
+						li.list-group-item.alert-danger Player had <b>Error</b> updating
+						li.list-group-item.alert-info Player is being <b>Updated</b>
 		.btn-group
 			btn.btn.btn-default(ng-click="sortOrder = 0" ng-class="{active: sortOrder == 0}") Name
 			btn.btn.btn-default(ng-click="sortOrder = 1" ng-class="{active: sortOrder == 1}") Score
 		.list-group
-			a.list-group-item(ng-repeat="pid in availablePlayersList | orderBy: getSortOrder:sortOrder == 1" ng-click="attachPlayer(pid)" ng-class="{'list-danger': onOtherTeam(pid)}")
-				!= helpers.outputLeaderStar('pid', 'teamId')
-				| {{data.players[pid].name}} 
-				b {{playerScoreByRef(pid)}}
+			a.list-group-item(ng-repeat="pid in availablePlayersList | orderBy: getSortOrder:sortOrder == 1" ng-click="attachPlayer(pid)" class="alert-success" ng-class="{'alert-warning': onOtherTeam(pid), 'alert-info': data.players[pid].updating, 'alert-danger': data.players[pid].updatingerror && data.players[pid].updatingerror != ''}")
+				!= helpers.outputPlayer('pid', 'teamId', false, true, true)
 	.col-md-4
-		p currently assigned players {{attachedPlayers}}
+		h4 Currently Assigned Players
 		.list-group
 			a.list-group-item(ng-repeat="pid in attachedPlayers | orderBy: getSortOrder2" ng-click="unattachPlayer(pid)")
-				!= helpers.outputLeaderStar('pid', 'teamId')
-				| {{data.players[pid].name}} 
-				b {{playerScoreByRef(pid)}}
+				!= helpers.outputPlayer('pid', 'teamId', false, true, true)
 	.col-md-5
-		p Stats/details
+		h4 Stats
 		table.table.table-bordered
 			tr.info
 				th Team Wins
@@ -43,11 +51,11 @@ p {{team}}
 				td
 					!= helpers.outputLeaderStar('pid', 'teamId')
 					| {{data.players[pid].name}}
-				td(ng-class="{info: attachedPlayers.indexOf(pid) == -1, 'text-info': attachedPlayers.indexOf(pid) != -1}")
+				td.text-center(ng-class="{info: attachedPlayers.indexOf(pid) == -1, 'text-info': attachedPlayers.indexOf(pid) != -1}")
 					| {{session.playerTeamMatrix[pid][teamId].with.win}}
-				td(ng-class="{danger: attachedPlayers.indexOf(pid) == -1, 'text-danger': attachedPlayers.indexOf(pid) != -1}")
+				td.text-center(ng-class="{danger: attachedPlayers.indexOf(pid) == -1, 'text-danger': attachedPlayers.indexOf(pid) != -1}")
 					| {{session.playerTeamMatrix[pid][teamId].with.loss}}
-				td(ng-class="{info: attachedPlayers.indexOf(pid) == -1, 'text-info': attachedPlayers.indexOf(pid) != -1}")
+				td.text-center(ng-class="{info: attachedPlayers.indexOf(pid) == -1, 'text-info': attachedPlayers.indexOf(pid) != -1}")
 					| {{session.playerTeamMatrix[pid][teamId].against.win}}
-				td(ng-class="{danger: attachedPlayers.indexOf(pid) == -1, 'text-danger': attachedPlayers.indexOf(pid) != -1}")
+				td.text-center(ng-class="{danger: attachedPlayers.indexOf(pid) == -1, 'text-danger': attachedPlayers.indexOf(pid) != -1}")
 					| {{session.playerTeamMatrix[pid][teamId].against.loss}}

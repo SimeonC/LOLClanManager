@@ -18,7 +18,7 @@
     "coffee-script": "~1.6.0",
     "tough-cookie": "~0.12.0",
     "consolidate": "*",
-    "mathjs": "*",
+    "mathjs": "~0.19",
     "connect-mincer": "*",
     "bower": "*",
     "mincer": "~1.0.1",

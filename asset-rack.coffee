@@ -12,7 +12,8 @@
 			'assets/javascript',
 			'assets/stylus',
 			'bower_components/angular-strap/dist',
-			'bower_components/angular-motion/dist'
+			'bower_components/angular-motion/dist',
+			'assets/images'
 		]
 	@use connectMincer.assets()
 	if process.env.NODE_ENV isnt 'production' then @app.use '/assets', connectMincer.createServer()

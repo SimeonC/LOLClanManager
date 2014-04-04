@@ -4,9 +4,8 @@
 			a.pull-right.btn(href="newplayer")
 				i.fa.fa-plus
 		.list-group
-			a.list-group-item(ng-repeat="key in playerOrder | orderBy: leaderThenPlayerName", href="player/{{key}}")
-				!= helpers.outputLeaderStar('key')
-				| {{data.players[key].name}}
+			a.list-group-item(ng-repeat="key in playerOrder | orderBy: leaderThenPlayerName", href="player/{{key}}", ng-class="{'alert-danger': data.players[key].updatingerror && data.players[key].updatingerror != ''}")
+				!= helpers.outputPlayer('key')
 	.col-lg-4
 		h2 Sessions
 			a.pull-right.btn(href="newsession")

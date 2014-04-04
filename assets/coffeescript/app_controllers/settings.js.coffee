@@ -7,11 +7,7 @@ SettingsController = class SettingsController
 					$scope.players[player.pid] = player
 		
 		$scope.data = data
-		$scope.formula = """
-			a = (loldb + opgg) * (ranktier + 1)
-			wl = (win / (win + loss))
-			0.5*a + a*wl
-		"""
+		$scope.formula = $scope.data.aggregateFormula
 		$scope.allPlayers = []
 		$scope.players = {}
 		# add 10 players for demo purposes
@@ -21,6 +17,8 @@ SettingsController = class SettingsController
 			$scope.players[key] = angular.extend {}, $scope.data.players[key]
 			$scope.players[key].scores = angular.extend {}, $scope.data.players[key].scores
 			count++
+		
+		$scope.orderByScore = (pid) -> parseInt $scope.players[pid].scores.aggregate
 		
 		$scope.reCalcPlayers = ->
 			$http.post('/api/test-formula',

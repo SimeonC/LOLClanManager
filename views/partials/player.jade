@@ -1,21 +1,106 @@
 h1 Player
-button.btn.btn-primary(ng-click="reloadFromServers()")
-	i.fa.fa-refresh
-	|  Reload
-button.btn.btn-success
-	i.fa.fa-save
-	|  Save
-a.btn.btn-warning(href="manager")
-	i.fa.fa-times
-	|  Cancel
-p Name: {{player.name}}
-p Ingame Name: {{player.inGameName}}
-p Total Session Win Percentage: {{player.winpercent | number:2}}% ({{player.win}} wins | {{player.loss}} losses)
-p Rank: {{player.rank.label}}
-p Scores:
-ul.list-group
-	li.list-group-item loldb ({{player.scores.loldb}})
-	li.list-group-item opgg ({{player.scores.opgg}})
-p Top Champs:
-ul.list-group
-	li.list-group-item(ng-repeat="champ in player.mostPlayedChampions") {{champ.champion}}, {{champ.games}}, {{champ.kda}}
+.row
+	.col-md-6
+		button.btn.btn-primary.pull-right(ng-click="reloadFromServers()" ng-disabled="player.updating")
+			i.fa.fa-refresh(ng-class="{'fa-spin': player.updating}")
+			|  Reload
+		a.btn.btn-default(href="manager")
+			i.fa.fa-times-circle
+			|  Go Back
+.row
+	form.col-md-6.form-horizontal.panel
+		.alert.alert-danger(ng-show="player.updatingerror && player.updatingerror != ''")
+			b Updating Error:
+			|  {{player.updatingerror}}
+			br
+			| This is most likely due to an incorrect In-Game name or the site being down.
+		.form-group
+			label.col-sm-2 Name
+			.col-sm-10
+				input.form-control(ng-model="player.name" required)
+		.form-group
+			label.col-sm-2 In-Game Name
+			.col-sm-10
+				input.form-control(ng-model="player.inGameName" required)
+		.form-group
+			label.col-sm-2 Is Leader
+			.col-sm-10
+				label.radio-inline
+					input(type="radio" ng-model="player.leader" ng-value="true")
+					|  
+					i.fa.fa-star.text-yellow
+					|  Leader
+				label.radio-inline
+					input(type="radio" ng-model="player.leader" ng-value="false")
+					|  Not Leader
+		.form-group
+			label.col-sm-2 op.gg Url
+			.col-sm-10
+				a.ellipsis-text.form-control(target="_blank" ng-if="!player.updatingerror || player.updatingerror == ''" href="{{player.urls.opgg.root}}userName={{player.inGameName}}") {{player.urls.opgg.root}}userName={{player.inGameName}}
+				.ellipsis-text.form-control(ng-show="player.updatingerror && player.updatingerror != ''") {{player.urls.opgg.root}}userName={{player.inGameName}}
+		.form-group
+			label.col-sm-2 LOLDB Url
+			.col-sm-10
+				a.ellipsis-text.form-control(target="_blank" ng-if="!player.updatingerror || player.updatingerror == ''" href="{{player.urls.loldb}}") {{player.urls.loldb}}
+				.ellipsis-text.form-control(ng-show="player.updatingerror && player.updatingerror != ''") {{player.urls.loldb}}
+	.col-md-6
+		.row.text-center
+			.col-md-6
+				.panel.panel-default
+					.panel-heading
+						h3.panel-title Total Session Win Percentage
+					.panel-body
+						.progress(ng-if="player.scores")
+							.progress-bar.progress-bar-info(role="progressbar" aria-valuenow="60" style="width: {{winPercent()*100}}%;") Win {{winPercent()*100 | number:2}}%
+							.progress-bar.progress-bar-danger(role="progressbar" aria-valuenow="60" style="width: {{(1-winPercent())*100}}%;") Loss {{(1-winPercent())*100 | number:2}}%
+						p(ng-if="!player.scores") No Games Recorded
+			.col-md-6
+				.panel.panel-default
+					.panel-heading
+						h3.panel-title Rank
+					.panel-body
+						img(ng-if="player.rank && player.rank.image && player.rank.image != ''", ng-src="assets/{{player.rank.image}}")
+					.panel-footer {{player.rank.label}}
+		.panel.panel-default
+			.panel-heading
+				h3.panel-title Most Played Roles
+			.panel-body
+				.label(ng-repeat="(key, prefId) in player.preference" ng-class="{'label-default': key > 2, 'label-danger': key == 0, 'label-warning': key == 1, 'label-info': key == 2}" style="margin-left: 3px; margin-right: 3px;")
+					| {{data.preferenceIdNames[prefId]}}
+		.panel.panel-default
+			.panel-heading
+				h3.panel-title Top Champs
+			.panel-body
+				table.table.table-bordered.table-condensed
+					tr
+						th Champion
+						th.text-center Total Games
+						th.text-center KDA
+					tr(ng-repeat="champ in player.mostPlayedChampions")
+						td {{champ.champion}}
+						td.text-center {{champ.games}}
+						td.text-center {{champ.kda}}
+		.panel.panel-default(ng-repeat="session in data.sessions")
+			.panel-heading
+				h3.panel-title Session {{session.name}}
+			.panel-body
+				table.table.table-bordered.table-condensed
+					tr
+						th(rowspan="2") Team
+						th(colspan="2") Games With
+						th(colspan="2") Against
+					tr
+						th.info Wins
+						th.danger Losses
+						th.info Wins
+						th.danger Losses
+					tr(ng-repeat="(tid, team) in session.teams")
+						td {{team.name}}
+						td.text-center.info.text-info
+							| {{session.playerTeamMatrix[player.pid][tid].with.win | number}}
+						td.text-center.danger.text-danger
+							| {{session.playerTeamMatrix[player.pid][tid].with.loss | number}}
+						td.text-center.info.text-info
+							| {{session.playerTeamMatrix[player.pid][tid].against.win | number}}
+						td.text-center.danger.text-danger
+							| {{session.playerTeamMatrix[player.pid][tid].against.loss | number}}

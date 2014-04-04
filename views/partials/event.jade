@@ -15,8 +15,7 @@
 			.list-group
 				.list-group-item.player-report(ng-repeat="pid in pair.team1.players | orderBy: leaderFirst(session.teams[pair.team1.id])")
 					h5.pull-right.label(ng-class="{'label-default': pair.winner == 0, 'label-info': pair.winner == 1, 'label-danger': pair.winner == 2}")
-						!= helpers.outputLeaderStar('pid', 'pair.team1.id')
-						| {{data.players[pid].name}}
+						!= helpers.outputPlayer('pid', 'pair.team1.id')
 					dl.dl-horizontal
 						dt Score
 						dd {{data.players[pid].scores.aggregate}}
@@ -52,8 +51,7 @@
 			.list-group
 				.list-group-item.player-report(ng-repeat="pid in pair.team2.players | orderBy: leaderFirst(session.teams[pair.team2.id])")
 					h5.pull-left.label(ng-class="{'label-default': pair.winner == 0, 'label-info': pair.winner == 2, 'label-danger': pair.winner == 1}")
-						!= helpers.outputLeaderStar('pid', 'pair.team2.id')
-						| {{data.players[pid].name}}
+						!= helpers.outputPlayer('pid', 'pair.team2.id')
 					dl.dl-horizontal
 						dt Score
 						dd {{data.players[pid].scores.aggregate}}

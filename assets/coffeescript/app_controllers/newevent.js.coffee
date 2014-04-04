@@ -168,7 +168,7 @@ NewEventController = class NewEventController
 		
 		$scope.sortOrder = 1
 		$scope.getSortOrder = (team) -> (pid) ->
-			if $scope.sortOrder is 1 then (if $scope.data.players[pid].updating then 4 else 1) * $scope.leaderFirst(team)(pid) * 1000000 + $scope.playerScoreByRef pid
+			if $scope.sortOrder is 1 then (if $scope.data.players[pid].updating then 4 else 1) * $scope.leaderFirst(team)(pid) * 1000000 - $scope.playerScoreByRef pid
 			else ((if $scope.data.players[pid].updating then 4 else 1) * $scope.leaderFirst(team)(pid)) + $scope.playerNameByRef pid
 		
 		validKeys =
