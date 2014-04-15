@@ -29,6 +29,16 @@ SettingsController = class SettingsController
 				$scope.lastformula = $scope.formula
 				if $scope.debugPid isnt '' then $scope.debugPlayer $scope.debugPid
 		
+		$scope.save = ->
+			$http.post('/api/save-formula',
+				formula: $scope.formula
+				players: $scope.players
+			).success (players) ->
+				$scope.data.aggregateFormula = $scope.formula
+				$scope.players = players
+				$scope.lastformula = $scope.formula
+				if $scope.debugPid isnt '' then $scope.debugPlayer $scope.debugPid
+		
 		$scope.selectedDebug = [
 			line: $scope.formula
 			result: '---'

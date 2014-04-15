@@ -16,21 +16,28 @@ async = require 'async'
 roles = require './roles'
 calculator = require './formula'
 
+#replace with @session.settings
+settings = 
+	loldb: true
+	opgg: false
+
 exports = module.exports =
 	servers:
 		oce:
 			loldb: '9'
 			opgg: 'oce'
+			lolskill: 'oce'
 	currentSeason: 4
 	
 	#creates an alial for getProfile
 	updatePlayer: @getprofile
 	# takes in an array of objects, each object must have at least a loldb url
 	# cb is called when each player is updated
-	updatePlayers: (players, cb) ->
+	updatePlayers: (players, updatecb, cb, testing=false) ->
 		callfunctions = []
 		for p in players
 			callfunctions.push ((player) => ((callback) =>
+				updatecb 'playerupdatestarted', player.pid
 				# for passback updating
 				player.updating = false
 				delete player.updatingerror
@@ -51,6 +58,13 @@ exports = module.exports =
 			# find player by player.pid in session and update
 			finalCb.apply this, arguments
 		if not player.scores? then player.scores = {win: 0, loss: 0}
+		lolskill = (player, cb) =>
+			try
+				@getLolskillProfile player, =>
+					opgg player, cb
+			catch error
+				player.updatingerror = "Error Occured Updating LOLSkill profile"
+				opgg player, cb
 		opgg = (player, cb) =>
 			try
 				@getOpggProfile player, =>
@@ -62,10 +76,59 @@ exports = module.exports =
 			
 		try
 			@getLoldbProfile player, =>
-				opgg player, cb
+				lolskill player, cb
 		catch error
 			player.updatingerror = "Error Occured Updating LOLDB profile"
-			opgg player, cb
+			lolskill player, cb
+	
+	getLolskillProfile: (player, cb) ->
+		request
+			uri: "http://www.lolskill.net/summoner-#{@servers[player.server].lolskill}-#{encodeURIComponent player.inGameName}"
+		, (err,resp,body) -> if err then throw err else
+			try
+				$ = cheerio.load body
+				values = []
+				champions = []
+				$("table#championsTable > tr:not(:first-child)").each (index, row) ->
+					row = $ row
+					data = row.find "td.stat.tiptip"
+					allvals = data.first().attr('title').match(/\([^\)]*\)/)[0]
+						.replace /\(|\)/g, ''
+						.split '+'
+					allvals.splice 2, 1 # removes the XP value, leaving us with PP and GP
+					values.push(allvals
+						.map (value) -> parseInt value.replace /[^0-9]*/g, ''
+						.reduce (a,b) -> a + b
+					)
+					champions.push
+						champion: row.find("td.left > a").text()
+						score: values[values.length - 1]
+						games: parseInt data.eq(1).text()
+						kills: parseFloat data.eq(2).text()
+						deaths: parseFloat data.eq(3).text()
+						assists: parseFloat data.eq(4).text()
+						cs: parseFloat data.eq(5).text()
+						gold: parseFloat data.eq(6).text()
+				if values.length > 0
+					player.mostSkilledChampions = champions.splice 0, 5
+					# the higher the balanced number is the less balanced his/her champion pool is
+					nextdiff = values.map (value, index) -> if index isnt values.length - 1 then value - values[index + 1] else 0
+					totaldiff = nextdiff.reduce (a,b) -> a+b
+					average = totaldiff / (nextdiff.length - 1)
+					balanced = -1 * nextdiff.map (value) -> if value > average then 1 else if value is average then 0 else -1
+						.reduce (a,b) -> a+b
+					player.scores.lolskill = (Math.round ((values.reduce (a,b) -> a + b) / values.length) * 100) / 100
+					player.scores.lolskillbalance = balanced
+				else
+					player.mostSkilledChampions = []
+					player.scores.lolskill =
+						value: 0
+						weighting: 0
+				cb false, player
+			catch error
+				console.log error
+				player.updatingerror = "Error Occured Updating LOLSkill profile"
+				cb false, player
 	
 	getLoldbProfile: (player, cb) ->
 		request
@@ -77,7 +140,7 @@ exports = module.exports =
 				# this catches any player changing his/her name due to loldb assigning a unique URL - therefore the opgg won't fail
 				player.inGameName = $('div.sumBse div.fl.sumName p:first-child').html()
 				if not player.name? then player.name = player.inGameName
-				player.scores.loldb = parseInt $('div.fr.fightRank dl:first-child dd').html().trim().replace /[^0-9]*/g, ''
+				player.scores.loldb = if not settings.loldb then 0 else parseInt $('div.fr.fightRank dl:first-child dd').html().trim().replace /[^0-9]*/g, ''
 				rankString = $('div.portlet div.ranked div.fl.mBoxCon.boxsdow:last-child div.rankedInfo p').html().trim()
 				rankData = rankString.split ' '
 				rankTier = 0
@@ -111,35 +174,40 @@ exports = module.exports =
 				cb false, player
 	
 	getOpggProfile: (player, cb) ->
-		request.post(
-			uri: player.urls.opgg.root + "ajax/mmr.json/"
+		request
+			uri: player.urls.opgg.root + "champions/userName=#{encodeURIComponent player.inGameName}"
 			jar: cookieJar
 		, (err,resp,body) => if err then throw err else
-			try
-				json = JSON.parse body
-				player.scores.opgg = if json.error then 0 else parseInt json.mmr.replace /[^0-9]*/g, ''
-			catch any
-				player.updatingerror = "Error Getting OPGG MMR"
-			request
-				uri: player.urls.opgg.root + "champions/userName=#{player.inGameName}"
-				jar: cookieJar
-			, (err,resp,body) => if err then throw err else
-				# "get top champions #{player.inGameName} @ #{player.urls.opgg.root}champions/userName=#{player.inGameName}"
-				$ = cheerio.load body
-				# convert from seconds to ms
-				lastUpdate = 1000 * parseInt $('span.lastUpdate span._timeago').attr 'data-datetime'
-				# if last time updated 24 hours ago
-				# "Remote Update from OPGG #{lastUpdate} #{Date.now()} #{lastUpdate < Date.now() - 86400000}"
-				if lastUpdate < Date.now() - 86400000 then @remoteUpdateOpgg player
-				championRows = $ "div.ChampionStats div.ChampionsStatsSeason-active table tbody tr"
-				player.mostPlayedChampions = ({
-					champion: championRows.eq(i).find('div.championName').text().trim()
-					games: championRows.eq(i).find('.total').text().trim()
-					kda: championRows.eq(i).find('.kdaratio').text().trim()
-				}for i in [0...Math.min 3, championRows.length])
+			# "get top champions #{player.inGameName} @ #{player.urls.opgg.root}champions/userName=#{player.inGameName}"
+			$ = cheerio.load body
+			# convert from seconds to ms
+			lastUpdate = 1000 * parseInt $('span.lastUpdate span._timeago').attr 'data-datetime'
+			# if last time updated 24 hours ago
+			# "Remote Update from OPGG #{lastUpdate} #{Date.now()} #{lastUpdate < Date.now() - 86400000}"
+			if lastUpdate < Date.now() - 86400000 then @remoteUpdateOpgg player
+			championRows = $ "div.ChampionStats div.ChampionsStatsSeason-active table tbody tr"
+			player.mostPlayedChampions = ({
+				champion: championRows.eq(i).find('div.championName').text().trim()
+				games: championRows.eq(i).find('.total').text().trim()
+				kda: championRows.eq(i).find('.kdaratio').text().trim()
+			}for i in [0...Math.min 3, championRows.length])
+			
+			if settings.opgg
+				request.post(
+					uri: player.urls.opgg.root + "ajax/mmr.json/"
+					jar: cookieJar
+				, (err,resp,body) => if err then throw err else
+					try
+						json = JSON.parse body
+						player.scores.opgg = if json.error then 0 else parseInt json.mmr.replace /[^0-9]*/g, ''
+					catch any
+						player.updatingerror = "Error Getting OPGG MMR"
+					cb false, player
+				).form
+					userName: player.inGameName
+			else
+				player.scores.opgg = 0
 				cb false, player
-		).form
-			userName: player.inGameName
 	
 	# should be called max once per player per day
 	remoteUpdateOpgg: (player) ->
@@ -175,7 +243,7 @@ exports = module.exports =
 				player.urls.loldb = "http://loldb.gameguyz.com#{playerURL}"
 				try
 					request
-						uri: "#{player.urls.opgg.root}userName=#{player.inGameName}"
+						uri: "#{player.urls.opgg.root}userName=#{encodeURIComponent player.inGameName}"
 						jar: cookieJar
 					, (err,resp,body) => if err then throw err else
 						$ = cheerio.load body

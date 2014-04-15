@@ -1,7 +1,7 @@
 .row
 	.col-lg-12
 		h2 {{session.name}}
-			a.btn.btn-success.pull-right(href="newevent/{{sessionKey}}") New Event
+			a.btn.btn-success.pull-right(href="manage/newevent/{{sessionKey}}") New Event
 .row
 	.col-lg-12
 		h2 Teams
@@ -10,7 +10,7 @@
 			.panel-heading
 				h4
 					| {{team.name}}
-					a.btn.btn-primary.btn-sm.pull-right(href="team/{{sessionKey}}/{{key}}") Edit
+					a.btn.btn-primary.btn-sm.pull-right(href="manage/team/{{sessionKey}}/{{key}}") Edit
 			.panel-body
 				p
 					| Wins 
@@ -18,14 +18,14 @@
 					|  Losses 
 					span.badge.label-danger {{team.loss}}
 				.list-group
-					a.list-group-item(ng-repeat="pid in team.players | orderBy: leaderFirst(team)" href="player/{{pid}}")
+					a.list-group-item(ng-repeat="pid in team.players | orderBy: leaderFirst(team)" href="manage/player/{{pid}}")
 						!= helpers.outputPlayer('pid', 'team')
 .row
 	.col-lg-12
 		h2 History
 	.col-lg-12.session-history(ng-repeat="event in session.history")
 		h3 Event on {{event.date | date}}
-			a.btn.btn-primary.pull-right(href="event/{{sessionKey}}/{{$index}}") View Details
+			a.btn.btn-primary.pull-right(href="manage/event/{{sessionKey}}/{{$index}}") View Details
 		.row(ng-repeat="pair in event.pairings")
 			.col-md-6.panel.text-right.team-1(ng-class="{'panel-default': pair.winner == 0, 'panel-info': pair.winner == 1, 'panel-danger': pair.winner == 2}")
 				.panel-heading

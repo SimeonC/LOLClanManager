@@ -6,6 +6,6 @@ NewPlayerController = class NewPlayerController
 				name: ''
 				win: 0
 				loss: 0
-			$location.path "/player/#{id}"
+			$location.path('manage/player/p1').replace()
 		###
-		$location.path('player/p1').replace()
+		$location.path('manage/player/p1').replace()

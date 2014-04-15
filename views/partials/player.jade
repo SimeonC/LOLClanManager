@@ -4,7 +4,7 @@ h1 Player
 		button.btn.btn-primary.pull-right(ng-click="reloadFromServers()" ng-disabled="player.updating")
 			i.fa.fa-refresh(ng-class="{'fa-spin': player.updating}")
 			|  Reload
-		a.btn.btn-default(href="manager")
+		a.btn.btn-default(href="manage/")
 			i.fa.fa-times-circle
 			|  Go Back
 .row
@@ -50,9 +50,11 @@ h1 Player
 					.panel-heading
 						h3.panel-title Session Stats
 					.panel-body(ng-if="player.scores")
-						.progress(ng-if="player.scores")
+						.progress(ng-if="player.scores.win + player.scores.loss > 0")
 							.progress-bar.progress-bar-info(role="progressbar" aria-valuenow="60" style="width: {{winPercent()*100}}%;") Win {{winPercent()*100 | number:2}}%
 							.progress-bar.progress-bar-danger(role="progressbar" aria-valuenow="60" style="width: {{(1-winPercent())*100}}%;") Loss {{(1-winPercent())*100 | number:2}}%
+						.progress(ng-if="player.scores.win + player.scores.loss == 0")
+							.progress-bar.progress-bar-warning(role="progressbar" aria-valuenow="100" style="width: 100%;") No Win/Loss Data
 						table.table.table-condensed
 							tr
 								th
@@ -73,7 +75,7 @@ h1 Player
 					.panel-heading
 						h3.panel-title Rank
 					.panel-body
-						img(ng-if="player.rank && player.rank.image && player.rank.image != ''", ng-src="assets/{{player.rank.image}}")
+						img(ng-if="player.rank && player.rank.image && player.rank.image != ''", ng-src="/assets/{{player.rank.image}}")
 					.panel-footer {{player.rank.label}}
 		.panel.panel-default
 			.panel-heading

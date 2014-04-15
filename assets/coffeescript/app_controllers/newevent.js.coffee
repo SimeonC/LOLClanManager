@@ -5,6 +5,9 @@ NewEventController = class NewEventController
 			playerUpdate: (player) ->
 				if player.updatingerror? and player.updatingerror isnt ''
 					$scope.removePlayer player.pid
+				else if -1 is $scope.allPresentPlayers.indexOf(player.pid)
+					$scope.allPresentPlayers.push player.pid
+				$scope.allPresentPlayers.sort (a,b) -> $scope.playerScoreByRef(b) - $scope.playerScoreByRef a
 		keyDownEvent = ($event) ->
 			if ($event.ctrlKey or $event.metaKey)
 				index = $scope.indexForKeycode($event.which)
@@ -21,7 +24,7 @@ NewEventController = class NewEventController
 		sendUpdateQueue = ->
 			tempUpdateQueue = updateQueue
 			updateQueue = []
-			socket.emit 'update-players',
+			socket.privatesocket.emit 'updateplayers',
 				players: tempUpdateQueue
 			# responses done by sockets
 		updatePlayerById = (pid) ->
@@ -60,9 +63,7 @@ NewEventController = class NewEventController
 						pid = player.pid
 					else
 						# true new player
-						pid = "p#{Math.random() * 1000000000000000000}"
-						player.pid = pid
-						$scope.data.players[pid] = player
+						pid = $scope.newPlayer player
 						$scope.allPlayers.push pid
 					$scope.markPlayerPresent pid
 				@modal.hide()
@@ -84,7 +85,7 @@ NewEventController = class NewEventController
 				@data = {}
 				@modal.show()
 			post: ->
-				@loadingmessage = "Please wait while we get your data..."
+				@loadingmessage = "Please wait while we get attendance data..."
 				@loading = true
 				$scope.newPlayers.players = []
 				$http.post('/api/get-attendance', @data)
@@ -143,12 +144,18 @@ NewEventController = class NewEventController
 		$scope.allPlayers = []
 		angular.forEach $scope.data.players, (player, key) -> $scope.allPlayers.push key
 		$scope.presentPlayers = []
+		$scope.allPresentPlayers = []
 		$scope.markPlayerPresent = (pid) ->
 			if $scope.data.players[pid].updatingerror and $scope.data.players[pid].updatingerror isnt '' then $scope.fixPlayer pid
 			else
 				updatePlayerById pid
 				movePlayerById $scope.allPlayers, $scope.presentPlayers, pid
-		$scope.removePlayer = (pid) -> movePlayerById $scope.presentPlayers, $scope.allPlayers, pid
+				if -1 is $scope.allPresentPlayers.indexOf pid
+					$scope.allPresentPlayers.push pid
+					$scope.allPresentPlayers.sort (a,b) -> $scope.playerScoreByRef(a) - $scope.playerScoreByRef b
+		$scope.removePlayer = (pid) ->
+			movePlayerById $scope.presentPlayers, $scope.allPlayers, pid
+			movePlayerById $scope.allPresentPlayers, [], pid
 		$scope.addFilteredPlayers = ->
 			if $scope.shortcutmode
 				pid = $filter('orderBy')($filter('filter')($scope.allPlayers, $scope.playerFilter), $scope.playerNameByRef)[0]
@@ -167,10 +174,18 @@ NewEventController = class NewEventController
 			$scope.activeTeam = $scope.tempTeamsOrder[0]
 		
 		$scope.sortOrder = 1
+		# Depreciated for scoreSortOrder
 		$scope.getSortOrder = (team) -> (pid) ->
 			if $scope.sortOrder is 1 then (if $scope.data.players[pid].updating then 4 else 1) * $scope.leaderFirst(team)(pid) * 1000000 - $scope.playerScoreByRef pid
 			else ((if $scope.data.players[pid].updating then 4 else 1) * $scope.leaderFirst(team)(pid)) + $scope.playerNameByRef pid
 		
+		$scope.scoreSortOrder = (pid) -> (if $scope.data.players[pid].updating then 4 else 1) * 1000000 - $scope.playerScoreByRef pid
+		$scope.presentPlayerGroupedClass = (pid) ->
+			index = $scope.allPresentPlayers.indexOf pid
+			if data.players[pid].updatingerror && data.players[pid].updatingerror != '' then 'alert-danger'
+			else if data.players[pid].updating then 'alert-warning'
+			else if $scope.playerBracketCount and $scope.playerBracketCount isnt 0 then "present-group-#{parseInt(index / $scope.playerBracketCount) % 14}"
+			else ''
 		validKeys =
 			display: ['q','w','e','r','t','y','u','i','o','p']
 			code:	 [81, 87, 69, 82, 84, 89, 85, 73, 79, 80]
@@ -187,7 +202,7 @@ NewEventController = class NewEventController
 			else 10 + validKeys.code.indexOf code
 		$scope.presentPlayerFilter = _playerFilter 'presentPlayerFilterString'
 		$scope.topPresentPlayerId = -> $filter('orderBy')(
-			$filter('filter')($scope.presentPlayers, $scope.presentPlayerFilter), $scope.getSortOrder()
+			$filter('filter')($scope.presentPlayers, $scope.presentPlayerFilter), $scope.scoreSortOrder
 		)[0]
 		$scope.topPresentPlayer = -> $scope.data.players[@topPresentPlayerId()]
 		$scope.unassign = (pid, tid) -> movePlayerById $scope.tempTeams[tid].players, $scope.presentPlayers, pid
@@ -235,7 +250,7 @@ NewEventController = class NewEventController
 						players: $scope.tempTeams[pair[1]].players
 					winner: 0
 			$scope.session.history.push $scope.currentHistory
-			$location.path("event/#{$routeParams.sessionId}/#{$scope.session.history.length - 1}")
+			$location.path("manage/event/#{$routeParams.sessionId}/#{$scope.session.history.length - 1}")
 		$scope.placements =
 			modal: $modal
 				scope: $scope

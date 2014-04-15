@@ -140,12 +140,14 @@ script(id="newevent/placements.tpl.html" type="text/ng-template")
 			button.btn.btn-primary(type="submit") Add
 		.list-group
 			a.list-group-item(ng-repeat="pid in allPlayers | filter: playerFilter | orderBy: playerNameByRef" ng-click="markPlayerPresent(pid)" ng-class="{'alert-danger': data.players[pid].updatingerror && data.players[pid].updatingerror != ''}")
-				!= helpers.outputPlayer('pid', undefined, true, false)
+				!= helpers.outputPlayer('pid', undefined, true)
 	// present players
 	.col-md-4
 		h3 Present Players
 		p
 			input(ng-model="presentPlayerFilterString")
+		p
+			input(ng-model="playerBracketCount" type="number" placeholder="Max Number To Split Attending Players By")
 		p.text-right
 			| Set As Unattending
 			a.btn.btn-xs.btn-default.btn-inactive
@@ -155,12 +157,9 @@ script(id="newevent/placements.tpl.html" type="text/ng-template")
 			span.text-primary Active Team 
 			a.btn.btn-xs.btn-default.btn-inactive
 				i.fa.fa-toggle-right
-		.btn-group
-			btn.btn.btn-default(ng-click="sortOrder = 0" ng-class="{active: sortOrder == 0}") Name
-			btn.btn.btn-default(ng-click="sortOrder = 1" ng-class="{active: sortOrder == 1}") Score
 		ul.list-group
-			li.list-group-item(ng-repeat="pid in presentPlayers | filter: presentPlayerFilter | orderBy: getSortOrder()" ng-class="{'alert-danger': data.players[pid].updatingerror && data.players[pid].updatingerror != ''}")
-				!= helpers.outputPlayer('pid', undefined, true, false, true)
+			li.list-group-item(ng-repeat="pid in presentPlayers | filter: presentPlayerFilter | orderBy: scoreSortOrder" ng-class="presentPlayerGroupedClass(pid, $index)")
+				!= helpers.outputPlayer('pid', undefined, true, true)
 				.btn-group.pull-right(ng-hide="data.players[pid].updating || (data.players[pid].updatingerror && data.players[pid].updatingerror != '')")
 					a.btn.btn-xs.btn-default(ng-click="removePlayer(pid)" tooltip="Remove From Present")
 						i.fa.fa-toggle-left
@@ -188,7 +187,7 @@ script(id="newevent/placements.tpl.html" type="text/ng-template")
 					b {{totalScore(team) + topPresentPlayer().scores.aggregate}}
 				.list-group
 					b.list-group-item Players
-					a.list-group-item(ng-repeat="pid in team.players | orderBy: getSortOrder(session.teams[tid])" ng-click="unassign(pid, tid)")
+					a.list-group-item(ng-repeat="pid in team.players | orderBy: scoreSortOrder" ng-click="unassign(pid, tid)"  ng-class="presentPlayerGroupedClass(pid, $index)")
 						!= helpers.outputPlayer('pid', 'tid', true)
 				p Total Score: {{totalScore(team)}}
 				p Average Score: {{averageScore(team)}}

@@ -3,51 +3,60 @@
 
 #angular logic to go here
 osModifier = if navigator.appVersion.indexOf('Mac') > -1 then '&#8984;' else 'CTRL'
-socket = io.connect()
+privatesocket = io.connect 'http://tawmanager.localhost:3000/private'
+publicsocket = io.connect 'http://tawmanager.localhost:3000/public'
 module = angular.module 'lolclanmanager', ['ngRoute', 'ngAnimate', 'mgcrea.ngStrap'],
 	($routeProvider, $locationProvider) ->
 		$routeProvider.otherwise
-			templateUrl: 'partials/dashboard'
+			templateUrl: '/partials/dashboard'
 			controller: DashboardController
-		$routeProvider.when '/player/:playerId',
-			templateUrl: 'partials/player'
+		$routeProvider.when '/manage/player/:playerId',
+			templateUrl: '/partials/player'
 			controller: PlayerController
-		$routeProvider.when '/session/:sessionId',
-			templateUrl: 'partials/session'
+		$routeProvider.when 'manage/session/:sessionId',
+			templateUrl: '/partials/session'
 			controller: SessionController
-		$routeProvider.when '/team/:sessionId/:teamId',
-			templateUrl: 'partials/team'
+		$routeProvider.when 'manage/team/:sessionId/:teamId',
+			templateUrl: '/partials/team'
 			controller: TeamController
-		$routeProvider.when '/event/:sessionId/:eventId',
-			templateUrl: 'partials/event'
+		$routeProvider.when 'manage/event/:sessionId/:eventId',
+			templateUrl: '/partials/event'
 			controller: EventController
-		$routeProvider.when '/newplayer',
-			templateUrl: 'partials/loading'
+		$routeProvider.when 'manage/newplayer',
+			templateUrl: '/partials/loading'
 			controller: NewPlayerController
-		$routeProvider.when '/newsession',
-			templateUrl: 'partials/loading'
+		$routeProvider.when 'manage/newsession',
+			templateUrl: '/partials/loading'
 			controller: NewSessionController
-		$routeProvider.when '/newteam/:sessionId',
-			templateUrl: 'partials/loading'
+		$routeProvider.when 'manage/newteam/:sessionId',
+			templateUrl: '/partials/loading'
 			controller: NewTeamController
-		$routeProvider.when '/newevent/:sessionId',
-			templateUrl: 'partials/newevent'
+		$routeProvider.when 'manage/newevent/:sessionId',
+			templateUrl: '/partials/newevent'
 			controller: NewEventController
-		$routeProvider.when '/settings',
-			templateUrl: 'partials/settings'
+		$routeProvider.when 'manage/settings',
+			templateUrl: '/partials/settings'
 			controller: SettingsController
 		$locationProvider.html5Mode true
-module.service 'data', ['$http', ($http) ->
+
+module.service 'getAppId', ['$document', ($document) ->
+	-> $document.find('base').attr('href').replace /\//g, ''
+]
+
+module.service 'data', ['$http', 'getAppId', ($http, getAppId) ->
 	dataReturn =
 		loading: true
-	$http.get('/api/load-data')
+	appId = getAppId()
+	$http.get('/api/load-data/' + appId)
 		.success (data) ->
 			dataReturn.loading = false
 			angular.extend dataReturn, data
 			dataReturn.allPlayers = []
 			dataReturn.allPlayers.push key for key of data.players
-			socket.emit 'set_channel',
-				clan_name: data.clan_name
+			privatesocket.emit 'joinroom',
+				room: appId
+			publicsocket.emit 'joinroom',
+				room: appId
 		.error (data, status) ->
 			status = status.toString()
 			if status is '404' then window.location.replace '404'
@@ -72,18 +81,42 @@ module.factory 'sharedFuncs', -> ($scope) ->
 	formClass: (form, name) ->
 		'has-success': form[name].$dirty && form[name].$valid
 		'has-error': form[name].$invalid
+	newPlayer: (player) ->
+		pid = "p#{Math.random() * 1000000000000000000}"
+		player.pid = pid
+		$scope.data.players[pid] = player
+		$scope.data.allPlayers.push pid
+		pid
 module.factory 'sockets', ($rootScope, data) -> (callbacks) ->
-	if callbacks?
-		if callbacks.playerUpdate? then socket.on 'playerupdate', (resp) ->
-			$rootScope.$apply ->
-				resp.player.updating = false
-				if not resp.localonly
+	publicsocket.on 'playerupdate', (resp) ->
+		$rootScope.$apply ->
+			resp.player.updating = false
+			if not resp.localonly
+				# handle new player being updated through
+				if not data.players[resp.player.pid]? then data.players[resp.player.pid] = resp.player
+				else
 					delete data.players[resp.player.pid].updatingerror
 					angular.extendDeep data.players[resp.player.pid], resp.player
-				callbacks.playerUpdate resp.player
-	socket
+			if callbacks? and callbacks.playerUpdate? then callbacks.playerUpdate resp.player
+	publicsocket.on 'playerupdatestarted', (resp) ->
+		$rootScope.$apply ->
+			if data.players[resp.pid]?
+				data.players[resp.pid].updating = true
+				delete data.players[resp.pid].updatingerror
+				if callbacks? and callbacks.playerupdatestarted? then callbacks.playerupdatestarted resp.pid
+	
+	publicsocket: publicsocket
+	privatesocket: privatesocket
+
+class NavController
+	constructor: ($scope, data, sharedFuncs, sockets, getAppId) ->
+		angular.extend $scope, sharedFuncs($scope)
+		$scope.data = data
+		$scope.appId = getAppId()
+@NavController = NavController
 
 class MainController
-	constructor: ($scope, data) ->
+	constructor: ($scope, data, sharedFuncs) ->
+		angular.extend $scope, sharedFuncs($scope)
 		$scope.data = data
 @MainController = MainController

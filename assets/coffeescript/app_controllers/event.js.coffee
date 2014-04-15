@@ -64,4 +64,4 @@ EventController = class EventController
 			else if pair.winner is 2 then playerTeamMod pair.team2, pair.team1, false
 			pair.winner = winteam
 			#save!
-		$scope.backToSession = -> $location.path("session/#{$routeParams.sessionId}").replace()
+		$scope.backToSession = -> $location.path("manage/session/#{$routeParams.sessionId}").replace()

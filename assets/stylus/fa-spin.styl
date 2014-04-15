@@ -1,0 +1,41 @@
+.fa-spin {
+  -webkit-animation: spin-sp 2s infinite linear;
+  -moz-animation: spin-sp 2s infinite linear;
+  -o-animation: spin-sp 2s infinite linear;
+  animation: spin-sp 2s infinite linear;
+}
+@-webkit-keyframes spin-sp {
+  0% {
+    -webkit-transform-origin: center center;
+    transform-origin: center center;
+    -webkit-transform: rotate(0deg);
+    transform: rotate(0deg);
+  }
+
+  100% {
+    -webkit-transform-origin: center center;
+    transform-origin: center center;
+    -webkit-transform: rotate(365deg);
+    transform: rotate(365deg);
+  }
+}
+
+@keyframes spin-sp {
+  0% {
+    -webkit-transform-origin: center center;
+    -ms-transform-origin: center center;
+    transform-origin: center center;
+    -webkit-transform: rotate(0deg);
+    -ms-transform: rotate(0deg);
+    transform: rotate(0deg);
+  }
+
+  100% {
+    -webkit-transform-origin: center center;
+    -ms-transform-origin: center center;
+    transform-origin: center center;
+    -webkit-transform: rotate(360deg);
+    -ms-transform: rotate(360deg);
+    transform: rotate(360deg);
+  }
+}

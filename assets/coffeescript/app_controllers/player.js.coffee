@@ -6,9 +6,7 @@ PlayerController = class PlayerController
 				angular.extendDeep $scope.data.players[$routeParams.playerId], player.player
 				if not $scope.player.leader then $scope.player.leader = false
 		$scope.reloadFromServers = ->
-			$scope.player.updating = true
-			delete $scope.player.updatingerror
-			socket.emit 'update-players',
+			socket.privatesocket.emit 'updateplayers',
 				players: [$scope.player]
 				localonly: false
 		
@@ -34,11 +32,7 @@ PlayerController = class PlayerController
 					team: ''
 		angular.forEach $scope.data.sessions, (session) ->
 			teamMatrix = session.playerTeamMatrix[$routeParams.playerId]
-			console.log teamMatrix
 			for key, team of teamMatrix
-				console.log key
-				console.log team
-				console.log session.teams[key].name
 				if team.with.win > $scope.sessionstats.wins.with.count
 					$scope.sessionstats.wins.with.count = team.with.win
 					$scope.sessionstats.wins.with.team = session.teams[key].name

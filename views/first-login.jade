@@ -1,0 +1,44 @@
+doctype html
+html
+	head
+		meta(charset='utf8')
+		meta(name="viewport", content="width=device-width, initial-scale=1.0")
+		title= title
+		script(src="https://ajax.googleapis.com/ajax/libs/angularjs/1.2.15/angular.min.js")
+		script(src="https://ajax.googleapis.com/ajax/libs/angularjs/1.2.15/angular-resource.min.js")
+		link(href="//netdna.bootstrapcdn.com/bootstrap/3.1.1/css/bootstrap.min.css", rel="stylesheet")
+		link(href="http://netdna.bootstrapcdn.com/font-awesome/4.0.3/css/font-awesome.css", rel="stylesheet")
+		base(href="/")
+		
+		!= js('first-login.js')
+		!= css('first-login.css')
+	body
+		.modal.show(tabindex="-1" role="dialog" ng-app="firstlogin" ng-controller="Controller")
+			.modal-dialog
+				form.modal-content(role="form" name="setupform" ng-submit="save()")
+					.modal-header
+						h4.modal-title First Login
+					.modal-body(ng-show="!saving")
+						p Please fill out the following details so we can finish setting up your account
+						.form-group.has-feedback(ng-class="{'has-warning': checkingApp, 'has-success': !checkingApp && setupform.appname.$valid, 'has-error': !checkingApp && setupform.appname.$invalid && setupform.appname.$dirty}")
+							label(for="appname") Application Name
+							input.form-control(type="string" name="appname" ng-model="data.appname" required ng-pattern="/^[a-zA-Z0-9 -]*$/" ng-change="checkUnique()")
+							i.fa.fa-spinner.fa-spin.form-control-feedback(ng-show="checkingApp")
+							i.fa.fa-check-circle-o.form-control-feedback(ng-show="!checkingApp && setupform.appname.$valid")
+							i.fa.fa-times-circle-o.form-control-feedback(ng-show="!checkingApp && setupform.appname.$dirty && setupform.appname.$invalid")
+							.help-block(ng-show="!checkingApp && setupform.appname.$invalid && setupform.appname.$dirty && setupform.appname.$error.pattern") Please enter a name only with numbers, letters, spaces and dashes
+							.help-block(ng-show="!checkingApp && setupform.appname.$invalid && setupform.appname.$dirty && !setupform.appname.$error.pattern && setupform.appname.$error.uniqueapp") This name has already been taken, please try another!
+							.help-block(ng-show="checkingApp") Checking to see if this name is available...
+						.form-group
+							label(for="appname") Application URL
+							.form-control.disabled {{dispurl()}}
+							.help-block This will be the URL that you will access through
+						.form-group
+							label(for="server") Main League of Legends Server
+							select.form-control(name="server" ng-options="key as value for (key, value) in servers" ng-model="data.server")
+					.modal-footer(ng-show="!saving")
+						button.btn.btn-success(type="submit" ng-disabled="checkingApp || setupform.$pristine || setupform.$invalid") Go
+					.modal-body.text-center(ng-show="saving")
+						p {{savingmessage}}
+						p.text-info
+							i.fa.fa-reload.fa-spin.fa-5x

@@ -1,7 +1,7 @@
 .row
 	.col-md-12
 		h2 Team {{team.name}}
-			a.btn.btn-default.pull-right(href="session/{{sessionId}}") Back To Session
+			a.btn.btn-default.pull-right(href="manage/session/{{sessionId}}") Back To Session
 .row
 	.col-md-3
 		h4 Players
@@ -22,12 +22,12 @@
 			btn.btn.btn-default(ng-click="sortOrder = 1" ng-class="{active: sortOrder == 1}") Score
 		.list-group
 			a.list-group-item(ng-repeat="pid in availablePlayersList | orderBy: getSortOrder:sortOrder == 1" ng-click="attachPlayer(pid)" class="alert-success" ng-class="{'alert-warning': onOtherTeam(pid), 'alert-info': data.players[pid].updating, 'alert-danger': data.players[pid].updatingerror && data.players[pid].updatingerror != ''}")
-				!= helpers.outputPlayer('pid', undefined, false, true, true)
+				!= helpers.outputPlayer('pid', undefined, false, true)
 	.col-md-4
 		h4 Currently Assigned Players
 		.list-group
 			.list-group-item(ng-repeat="pid in attachedPlayers | orderBy: getSortOrder2")
-				!= helpers.outputPlayer('pid', 'teamId', false, true, true)
+				!= helpers.outputPlayer('pid', 'teamId', false, true)
 				.btn-group.pull-right(ng-hide="data.players[pid].updating || (data.players[pid].updatingerror && data.players[pid].updatingerror != '')")
 					a.btn.btn-xs.btn-default(ng-click="unattachPlayer(pid)" tooltip="Remove From Team")
 						i.fa.fa-toggle-left

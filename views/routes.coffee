@@ -1,27 +1,22 @@
 @include = ->
 	
-	@app.locals.helpers = require './layout-helpers'
+	@get '/login', (req, res) -> res.render 'login.jade'
+	@get '/first-login', @auth, (req, res) -> res.render 'first-login.jade'
 	
-	@get '/optimiser': -> @render 'balancer.jade'
-	renderManagerApp = -> @render 'app.jade'
-	@get '/manager': renderManagerApp
-	@get '/dashboard': renderManagerApp
-	@get '/player/*': renderManagerApp
-	@get '/session/*': renderManagerApp
-	@get '/team/*': renderManagerApp
-	@get '/newplayer': renderManagerApp
-	@get '/newsession': renderManagerApp
-	@get '/newteam': renderManagerApp
-	@get '/newevent/*': renderManagerApp
-	@get '/event/*': renderManagerApp
-	@get '/settings': renderManagerApp
-	@get '/public/*': -> @render 'public_event.jade'
+	@get '/partials/dashboard', (req, res) -> res.render 'partials/dashboard.jade'
+	@get '/partials/loading', (req, res) -> res.render 'partials/loading.jade'
+	@get '/partials/player', (req, res) -> res.render 'partials/player.jade'
+	@get '/partials/session', (req, res) -> res.render 'partials/session.jade'
+	@get '/partials/team', (req, res) -> res.render 'partials/team.jade'
+	@get '/partials/event', (req, res) -> res.render 'partials/event.jade'
+	@get '/partials/newevent', (req, res) -> res.render 'partials/newevent.jade'
+	@get '/partials/settings', (req, res) -> res.render 'partials/settings.jade'
 	
-	@get '/partials/dashboard': -> @render 'partials/dashboard.jade'
-	@get '/partials/loading': -> @render 'partials/loading.jade'
-	@get '/partials/player': -> @render 'partials/player.jade'
-	@get '/partials/session': -> @render 'partials/session.jade'
-	@get '/partials/team': -> @render 'partials/team.jade'
-	@get '/partials/event': -> @render 'partials/event.jade'
-	@get '/partials/newevent': -> @render 'partials/newevent.jade'
-	@get '/partials/settings': -> @render 'partials/settings.jade'
+	@get '/', (req, res) -> res.render 'home.jade'
+	@get '/optimiser', (req, res) -> res.render 'balancer.jade'
+	@get '/:appid/manage*', @auth, (req, res) -> res.render 'app.jade',
+		appId: req.params.appid
+	
+	#must be laste as it's the most generic
+	@get '/:appid/*', (req, res) -> res.render 'public_event.jade',
+		appId: req.params.appid

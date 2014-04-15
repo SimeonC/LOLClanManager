@@ -6,6 +6,6 @@ NewSessionController = class NewSessionController
 				name: ''
 				win: 0
 				loss: 0
-			$location.path "/session/#{id}"
+			$location.path('manage/session/s1').replace()
 		###
-		$location.path('session/s1').replace()
+		$location.path('manage/session/s1').replace()

@@ -1,0 +1,12 @@
+doctype html
+html
+	body
+		#root(style="width: 400px; margin: 40px auto; padding: 10px;")
+		script(src="https://cdn.auth0.com/w2/auth0-widget-3.0.8.min.js")
+		script.
+			var widget = new Auth0Widget({
+				domain:         'simeonc.auth0.com',
+				clientID:       'QmqootAKiK8AOW85CT893RnoIFMo5ZyC',
+				callbackURL:    'http://tawmanager.localhost:3000/callback'
+			});
+			widget.signin({ container: 'root', chrome: true });
