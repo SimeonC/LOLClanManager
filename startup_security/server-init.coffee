@@ -48,20 +48,21 @@ passport.deserializeUser (user, done) -> done null, user
 	
 	#@all '/api/*', passport.authenticate 'auth0'
 	
-	@auth = passport.authenticate 'auth0'
+	@auth = (req, res, next) -> if req.isAuthenticated() then next() else res.redirect '/login'
+	
 	# Auth0 callback handler
 	@get '/callback', passport.authenticate('auth0',
 		failureRedirect: '/login'
 	), (req, res) ->
 		if not req.user then throw new Error 'user null'
-		console.log "hit callback"
-		console.log req.user
 		if req.user._json.appid?
 			req.session.dbconn = require('./../startup_security/nano').nano req.user._json.user_id, req.user._json.dbpass
 			res.redirect "/#{req.user._json.appid}/manage"
 		else res.redirect "/first-login"
 	
+	# warning this would log you out of facebook if you logged in via the facebook button - don't use this in live!
 	@get '/logout', (req, res) ->
 		req.logout()
 		delete req.session
-		res.redirect "/"
+		delete req.user
+		res.redirect "https://simeonc.auth0.com/logout?returnTo=http://tawmanager.localhost:3000/"
