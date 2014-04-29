@@ -1,1 +1,36 @@
-p PUBLIC EVENT
+extends layout
+
+block head
+	!= helpers.baseAppIdTag(appId)
+	!= css('public-app.css')
+	!= js('public-app.js')
+	
+block content
+	#app.container(ng-app='lolclanmanager')
+		.navbar.navbar-inverse.navbar-fixed-top(bs-navbar ng-controller="NavController as nav")
+			.container
+				ul.nav.navbar-nav
+					li.navbar-brand {{data.appName}}
+					li(data-match-route="dashboard")
+						a(ng-href="manage/dashboard") Dashboard
+					li.dropdown(data-match-route="manage/player/*")
+						a.dropdown-toggle(data-toggle="dropdown" bs-dropdown data-template="appnav/player-dropdown.tpl.html") Players
+							b.caret
+						script(id="appnav/player-dropdown.tpl.html" type="text/ng-template")
+							ul.dropdown-menu#players
+								li(ng-repeat="key in data.allPlayers | orderBy: playerNameByRef" data-match-route="manage/player/{{key}}")
+									a(ng-href="manage/player/{{key}}" ng-class="{'dropdown-danger': data.players[key].updatingerror && data.players[key].updatingerror != ''}")
+										!= helpers.outputPlayer('key')
+					li.dropdown(data-match-route="manage/session/*")
+						a.dropdown-toggle(data-toggle="dropdown" bs-dropdown data-template="appnav/session-dropdown.tpl.html") Sessions
+							b.caret
+						script(id="appnav/session-dropdown.tpl.html" type="text/ng-template")
+							ul.dropdown-menu#sessions
+								li(ng-repeat="(key, session) in data.sessions | orderBy: session.name" data-match-route="manage/session/{{key}}")
+									a(ng-href="manage/session/{{key}}") {{session.name}}
+				ul.nav.navbar-nav.pull-right
+					li
+						a(href="/login") Manage
+		.view-animate-container(ng-controller="MainController as main")
+			.view-animate(ng-if="!data.loading", ng-view)
+			h1(ng-if="data.loading") Loading

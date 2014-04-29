@@ -43,22 +43,6 @@ module.service 'getAppId', ['$document', ($document) ->
 	-> $document.find('base').attr('href').replace /\//g, ''
 ]
 
-module.service 'settings', ['$http', ($http) ->
-	dataReturn =
-		loading: true
-	$http.get('/api/load-settings')
-		.success (data) ->
-			dataReturn.loading = false
-			angular.extend dataReturn, data
-		.error (data, status) ->
-			status = status.toString()
-			if status is '404' then window.location.replace '/404'
-			else if status is '401' or status is '403' or status.substring 0, 1 is '5' then window.location.replace '/login'
-				
-	dataReturn
-]
-
-
 module.service 'data', ['$http', 'getAppId', ($http, getAppId) ->
 	dataReturn =
 		loading: true

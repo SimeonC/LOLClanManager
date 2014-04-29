@@ -20,15 +20,15 @@ html
 						h4.modal-title First Login
 					.modal-body(ng-show="!saving")
 						p Please fill out the following details so we can finish setting up your account
-						.form-group.has-feedback(ng-class="{'has-warning': checkingApp, 'has-success': !checkingApp && setupform.appname.$valid, 'has-error': !checkingApp && setupform.appname.$invalid && setupform.appname.$dirty}")
+						.form-group.has-feedback(ng-class="{'has-warning': setupform.appname.$error.pendingHttp, 'has-success': !setupform.appname.$error.pendingHttp && setupform.appname.$valid, 'has-error': !setupform.appname.$error.pendingHttp && setupform.appname.$invalid && setupform.appname.$dirty}")
 							label(for="appname") Application Name
-							input.form-control(type="string" name="appname" ng-model="data.appname" required ng-pattern="/^[a-zA-Z0-9 -]*$/" ng-change="checkUnique()")
-							i.fa.fa-spinner.fa-spin.form-control-feedback(ng-show="checkingApp")
-							i.fa.fa-check-circle-o.form-control-feedback(ng-show="!checkingApp && setupform.appname.$valid")
-							i.fa.fa-times-circle-o.form-control-feedback(ng-show="!checkingApp && setupform.appname.$dirty && setupform.appname.$invalid")
-							.help-block(ng-show="!checkingApp && setupform.appname.$invalid && setupform.appname.$dirty && setupform.appname.$error.pattern") Please enter a name only with numbers, letters, spaces and dashes
-							.help-block(ng-show="!checkingApp && setupform.appname.$invalid && setupform.appname.$dirty && !setupform.appname.$error.pattern && setupform.appname.$error.uniqueapp") This name has already been taken, please try another!
-							.help-block(ng-show="checkingApp") Checking to see if this name is available...
+							input.form-control(type="string" name="appname" ng-model="data.appname" required ng-pattern="/^[a-zA-Z0-9 -]*$/" httpValidation="/api/unique-app")
+							i.fa.fa-spinner.fa-spin.form-control-feedback(ng-show="setupform.appname.$error.pendingHttp")
+							i.fa.fa-check-circle-o.form-control-feedback(ng-show="!setupform.appname.$error.pendingHttp && setupform.appname.$valid")
+							i.fa.fa-times-circle-o.form-control-feedback(ng-show="!setupform.appname.$error.pendingHttp && setupform.appname.$dirty && setupform.appname.$invalid")
+							.help-block(ng-show="!setupform.appname.$error.pendingHttp && setupform.appname.$invalid && setupform.appname.$dirty && setupform.appname.$error.pattern") Please enter a name only with numbers, letters, spaces and dashes
+							.help-block(ng-show="!setupform.appname.$error.pendingHttp && setupform.appname.$invalid && setupform.appname.$dirty && !setupform.appname.$error.pattern && setupform.appname.$error.http") This name has already been taken, please try another!
+							.help-block(ng-show="setupform.appname.$error.pendingHttp") Checking to see if this name is available...
 						.form-group
 							label(for="appname") Application URL
 							.form-control.disabled {{dispurl()}}

@@ -4,12 +4,17 @@
 		p Available variables are 'loldb' 'opgg' 'ranktier' 'win' 'loss' (win and loss being recorded by the system only)
 		p The result of the last line of text will be the aggregate score value.
 		p For multi-line formula click on a name on the right to see a detailed breakdown.
-		textarea.form-control(rows="4" ng-model="formula")
-		button.btn.btn-primary(ng-click="reCalcPlayers()") Re-calculate Test Data
-		button.btn.btn-primary(ng-click="save()") Save and Update
+		textarea.form-control(rows="4" ng-disabled="settings.loading || data.players.length == 0" ng-model="formula")
+		button.btn.btn-primary(ng-disabled="settings.loading || data.players.length == 0" ng-click="reCalcPlayers()") Re-calculate Test Data
+		button.btn.btn-primary(ng-disabled="settings.loading || data.players.length == 0" ng-click="save()") Save and Update
 	.col-md-8
 		h3 Players
-		.row
+		.row(ng-if="data.players.length == 0")
+			.col-md-12
+				.alert.alert-warning
+					i.fa.fa-exclamation-triangle
+					|  You'll need to go and add some players before you can see the debug data.
+		.row(ng-if="data.players.length != 0 && !settings.loading")
 			.col-md-4
 				ul.list-group
 					li.list-group-item(ng-repeat="pid in allPlayers | orderBy: orderByScore:true" ng-class="{'alert-info': pid == debugPid}" ng-click="debugPlayer(pid)")

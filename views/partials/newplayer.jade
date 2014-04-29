@@ -1,0 +1,33 @@
+h1 New Players
+.row
+	form.col-md-12(name="players-form")
+		table.table.table-bordered
+			thead
+				tr
+					th Player Name
+					th Summoner Name
+					th Server
+					th Is Leader
+			tbody
+				tr.form-group(
+					ng-form="playerForm"
+					ng-repeat="player in newPlayers"
+					ng-class="{'has-warning': playerForm.$error.pendingHttpUnique, 'has-success': !playerForm.$error.pendingHttpUnique && playerForm.$valid, 'has-error': !playerForm.$error.pendingHttpUnique && playerForm.$invalid && playerForm.$dirty}"
+				)
+					td
+						input.form-control(type="string" name="name" ng-model="player.name" placeholder="Name" required httpValidation="/api/unique-player" show-icons='true' messages="errorMsg.name" ng-change="updateInGame(player)")
+						
+					td.has-feedback
+						input.form-control(type="string" name="name" ng-model="player.inGameName" placeholder="In Game Name" required httpValidation="/api/player-exists" additionalParams="{server: player.server}" show-icons='true' messages="errorMsg.ingamename")
+					td
+						button.btn.btn-primary.dropdown-toggle(bs-dropdown="server-dropdown(player)")
+							| {{servers[player.server]}} 
+							span.caret
+					td
+						button.btn.btn-default.dropdown-toggle(bs-dropdown="leader-dropdown(player)" ng-switch="player.leader")
+							span(ng-case-when="true")
+								i.fa.fa-star.text-yellow
+								| Leader
+							span(ng-case-when="false")
+								i.fa.fa-star-o
+								| Not Leader

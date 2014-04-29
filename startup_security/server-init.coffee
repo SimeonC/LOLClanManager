@@ -7,9 +7,7 @@ strategy = new Auth0Strategy
 	clientID:     security.auth0.clientID
 	clientSecret: security.auth0.clientSecret
 	callbackURL:  '/callback'
-, (accessToken, refreshToken, profile, done) ->
-	console.log "Hit Auth0 strategy"
-	done null, profile
+, (accessToken, refreshToken, profile, done) -> done null, profile
 
 passport.use strategy
 
@@ -45,19 +43,27 @@ passport.deserializeUser (user, done) -> done null, user
 		@use passport.initialize()
 		@use passport.session()
 		@use require('express-validator')()
+		# catch errors in general
+		@use (err, req, res, next) ->
+			console.log "catch error #{err.status}"
+			if err.status is 401 or err.status is 403 then res.render '/login',
+				error: "Please login before you can access this page."
+			else if err.status is 404 then res.render '/404'
+			else
+				res.status err.status or 500
+				res.render 'error',
+					error: err
 	
-	#@all '/api/*', passport.authenticate 'auth0'
-	
-	@auth = (req, res, next) -> if req.isAuthenticated() then next() else res.redirect '/login'
+	@auth = (req, res, next) -> if req.isAuthenticated() then next() else res.redirect 307, '/login'
+	@user_db = (req, cb) -> require('./../startup_security/nano').nano req.user._json.user_id, req.user._json.dbpass, (nano_conn) -> cb nano_conn.use req.user._json.appid
+	@all '/api/*', @auth
 	
 	# Auth0 callback handler
 	@get '/callback', passport.authenticate('auth0',
 		failureRedirect: '/login'
 	), (req, res) ->
 		if not req.user then throw new Error 'user null'
-		if req.user._json.appid?
-			req.session.dbconn = require('./../startup_security/nano').nano req.user._json.user_id, req.user._json.dbpass
-			res.redirect "/#{req.user._json.appid}/manage"
+		if req.user._json.appid? then res.redirect "/#{req.user._json.appid}/manage"
 		else res.redirect "/first-login"
 	
 	# warning this would log you out of facebook if you logged in via the facebook button - don't use this in live!

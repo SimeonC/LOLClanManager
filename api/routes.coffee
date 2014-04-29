@@ -5,8 +5,9 @@ async = require 'async'
 roles = require './roles'
 formula = require './formula'
 
+lolapi = require './../startup_security/leaguejs'
 auth0 = require './../startup_security/auth0'
-{admin_nano, nano} = require './../startup_security/nano'
+{admin_nano: _nano, nano} = require './../startup_security/nano'
 
 static_data = {}
 
@@ -42,73 +43,129 @@ static_data = {}
 	
 	# query DB and see if app id is in use
 	@post '/api/unique-app', (req, res) ->
-		admin_nano.db.list (err, body) ->
-			result = true
-			result = false for db in body when db is req.body.id
-			res.json
-				valid: result
+		_nano (nano) ->
+			nano.db.list (err, body) ->
+				result = true
+				result = false for db in body when db is req.body.value
+				res.json result
 	# setup in DB with all the correct permissions
 	@post '/api/setup', (req, res) ->
-		admin_nano.db.list (err, body) ->
-			dbexists = false
-			if db is req.body.appid then dbexists = true for db in body
-			if dbexists then res.json
-				success: false
-				message: "A unique application name is required"
-			else
-				admin_nano.db.create req.body.appid, (err, body) ->	
-					if err then res.json
+		# These events should execute fairly well in order, we use the namespacing for better debugging
+		apiSetup =
+			req: req
+			res: res
+			checkUniqueAppId: (next) -> 
+				@admin_nano.db.list (err, body) =>
+					dbexists = false
+					if db is @req.body.appid then dbexists = true for db in body
+					if dbexists then @res.json
 						success: false
-						message: "Error occured in creating database..."
+						message: "A unique application name is required"
+					else next()
+			createDB: (next) ->
+				@admin_nano.db.create @req.body.appid, (err, body, headers) =>	
+					if err then @res.json
+						success: false
+						message: "Error creating new site."
+						error: err
 					else
-						db = admin_nano.use req.body.appid
-						# create user and assign as db admin
-						couchpass = ''
-						require('crypto').randomBytes 48, (ex, buf) -> couchpass = buf.toString 'hex'
-						admin_nano.use('_users').insert
-							name: req.user.id
-							password: couchpass
-							roles: ['writer']
-							type: 'user'
-						, "org.couchdb.user:#{req.user.id}", (err, body) ->
-							console.log "Adding User"
-							console.log err
-							console.log body
-						# limit writes to writer only
-						db.insert
-							validate_doc_update: (new_doc, old_doc, userCtx) -> if userCtx.roles.indexOf('writer') is -1 then throw
-								forbidden: "Please Login First"
-						, '_design/writerAuthenticatedOnly'
-						# login with new user and create docs under him/her
-						user_nano = nano req.user.id, chouchpass
-						db = user_nano.use req.body.appid
-						# create settings document and general document
-						db.insert 'settings',
-							appId: req.body.appid
-							appName: req.body.appname
-							aggregateFormula: """
-								a = (loldb + lolskill) * (ranktier + 1) / lolskillbalance
-								w = win + 5
-								l = loss + 5
-								wl = w / max(w + l, 1)
-								0.5*a + ifElse(win + loss == 0, 0.5, wl)*a
-							"""
-							defaultServer: req.body.server
-						, (err) -> console.log "Error occured creating settings doc: ", err
-						db.insert 'general',
-							preferenceIdNames: roles.names
-							players: []
-							sessions: []
-						, (err) -> console.log "Error occured creating general doc: ", err
-						
-						
-						
-						auth0.updateUserMetadata req.user.id,
-							appid: req.body.appid
-							dbpass: couchpass
-		# setup new DB - with name of app_id
-		res.json
-			success: true
+						@db = @admin_nano.use @req.body.appid
+						next()
+			generateCouchPass: (next) ->
+				@couchpass = ''
+				require('crypto').randomBytes 48, (ex, buf) =>
+					@couchpass = buf.toString 'hex'
+					next()
+			createDBAdmin: (next) ->
+				@admin_nano.use('_users').insert
+					name: @req.user.id
+					password: @couchpass
+					roles: ['writer']
+					type: 'user'
+				, "org.couchdb.user:#{@req.user.id}", (err, body) =>
+					if err then @res.json
+						success: false
+						message: "Error creating new user."
+						error: err
+					else next()
+			secureDB: (next) ->
+				@db.insert
+					validate_doc_update: (new_doc, old_doc, userCtx) -> if userCtx.roles.indexOf('writer') is -1 then throw
+						forbidden: "Please Login First"
+				, '_design/writerAuthenticatedOnly', (err, body) =>
+					if err then @res.json
+						success: false
+						message: "Error creating permissions file"
+						error: err
+					else next()
+			setupDB: (next) ->
+				# login with new user and create docs under him/her
+				nano @req.user.id, @couchpass, (user_nano) =>
+					@db = user_nano.use @req.body.appid
+					async.parallel [@insertSettings, @insertGeneral, @playerViews, @pushAuth0Meta], next
+			insertSettings: (cb) =>
+				@db.insert
+					appId: @req.body.appid
+					appName: @req.body.appname
+					aggregateFormula: """
+						a = (loldb + lolskill) * (ranktier + 1) / lolskillbalance
+						w = win + 5
+						l = loss + 5
+						wl = w / max(w + l, 1)
+						0.5*a + ifElse(win + loss == 0, 0.5, wl)*a
+					"""
+					defaultServer: @req.body.server
+				, 'settings', cb
+			insertGeneral: (cb) =>
+				@db.insert
+					preferenceIdNames: roles.names
+					players: []
+					sessions: []
+				, 'general', cb
+			playerViews: (cb) =>
+				@db.insert
+					views:
+						by_name:
+							map: (doc) -> emit [doc.name], doc._id
+						by_in_game_name:
+							map: (doc) -> emit [doc.inGameName], doc._id
+				, '_design/players', cb
+			pushAuth0Meta: (cb) =>
+				auth0.updateUserMetadata @req.user.id,
+					appid: @req.body.appid
+					dbpass: @couchpass
+				, cb
+			cleanupStep: (err, results) ->
+				if err
+					@admin_nano.destroy @req.body.appid
+					auth0.updateUserMetadata @req.user.id, {}
+					@res.json
+						success: false
+						error: err
+				else @res.json
+					success: true
+		
+		_nano (admin_nano) ->
+			apiSetup.admin_nano = admin_nano
+			apiSetup.checkUniqueAppId apiSetup.createDB apiSetup.generateCouchPass apiSetup.createDBAdmin api.secureDB api.setupDB api.cleanupStep
+												
+	
+	# query DB and see if player name exists already
+	@post '/api/unique-player', (req, res) ->
+		_nano (nano) ->
+			nano.db.view "players", "by_name",
+				key: req.body.value
+			, (err, view) -> res.json view.rews.length is 0
+	# query LOL and see if this player inGameName exists
+	@post '/api/player-exists', (req, res) -> lolapi(req.body.server).Summoner.getByName req.body.value, (err, summoner) -> res.json not err
+	# add the player to the db
+	@post '/api/new-player', (req, res) ->
+		_nano (nano) ->
+			nano.db.list (err, body) ->
+				result = true
+				result = false for db in body when db is req.body.value
+				res.json result
+	
 	
 	@post '/api/get-attendance', (req, res) ->
 		attendance.getAttendance "#{req.body.eventid}", req.body.username, req.body.password, (err, attending) ->
@@ -140,14 +197,19 @@ static_data = {}
 				localonly: false
 	
 	@get '/api/load-data/:appId', (req, res) ->
-		admin_nano.db.get req.params.appId, (err, body) ->
-			if err then res.json 404, {error: "No app with name"}
-			else 
-				db = admin_nano.use req.params.appId
-				req.session.data = {}
-				db.view 'general', 'loaddata', (err, body) ->
-					if not err
-						res.json 200, req.session.data = body
+		_nano (admin_nano) ->
+			admin_nano.db.list (err, body) ->
+				result = true
+				result = false for db in body when db is req.body.id
+				if not result then res.json 404, {error: "No app with name"}
+				else
+					db = admin_nano.use req.params.appId
+					req.session.data = {}
+					db.get 'general', (err, body) ->
+						if not err then res.json 200, req.session.data = body
+						else res.json 500, err
+	
+	@get '/api/load-settings', @auth, (req, res) => @user_db req, (db) -> db.get 'settings', (err, body) -> res.json 200, body
 
 @publicio = ->
 		

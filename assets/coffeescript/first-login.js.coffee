@@ -1,4 +1,6 @@
-firstlogin = angular.module 'firstlogin', []
+#= require ./directives.js
+
+firstlogin = angular.module 'firstlogin', ['lolapp-modules']
 
 firstlogin.controller 'Controller', ($scope, $http, $location, $timeout) ->
 	$scope.data =

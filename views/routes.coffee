@@ -14,7 +14,9 @@
 	
 	@get '/', (req, res) -> res.render 'home.jade'
 	@get '/optimiser', (req, res) -> res.render 'balancer.jade'
-	@get '/:appid/manage*', @auth, (req, res) -> res.render 'app.jade',
+	@get '/:appid/manage*', (req, res, next) ->
+		if req.isAuthenticated() then next() else res.redirect 307, "/#{req.params.appid}/"
+	, (req, res) -> res.render 'app.jade',
 		appId: req.params.appid
 	
 	#must be laste as it's the most generic
